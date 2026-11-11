@@ -1,7 +1,7 @@
 <?php
 
 $host = "localhost";
-$banco = "pixel_quest";
+$banco = "pixel-quest";
 $usuario = "root";
 $senha = "";
 

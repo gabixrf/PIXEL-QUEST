@@ -42,7 +42,7 @@
                 <span></span>
             </div>
 
-            <a href="acesso.php" class="botao-iniciar" id="botaoIniciar">
+            <a href="cadastro_usuario.php" class="botao-iniciar" id="botaoIniciar">
                 INICIAR AVENTURA
             </a>
 
@@ -124,7 +124,7 @@
         }
 
         pularHistoria.addEventListener("click", () => {
-            window.location.href = "acesso.php";
+            window.location.href = "cadastro_usuario.php";
         });
 
         escreverFrase();

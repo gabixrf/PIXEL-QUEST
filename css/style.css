@@ -1,6 +1,9 @@
+
 @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Roboto+Mono:wght@400;500;600&display=swap');
 
-/* CONFIGURAÇÕES GERAIS */
+/* ==============================
+   CONFIGURAÇÕES GERAIS
+============================== */
 
 * {
     margin: 0;
@@ -12,14 +15,19 @@ body {
     background-color: #050817;
     color: #ffffff;
     font-family: 'Roboto Mono', monospace;
-    overflow: hidden;
+
+    overflow-x: hidden;
+    overflow-y: auto;
 }
 
 a {
     text-decoration: none;
 }
 
-/* TELA INICIAL */
+
+/* ==============================
+   TELA INICIAL
+============================== */
 
 .tela-inicial {
     width: 100%;
@@ -137,7 +145,10 @@ a {
     margin-top: 45px;
 }
 
-/* TELA DA HISTÓRIA */
+
+/* ==============================
+   TELA DA HISTÓRIA
+============================== */
 
 .tela-historia {
     width: 100%;
@@ -283,4 +294,584 @@ a {
     background-color: #a77bff;
 
     box-shadow: 0 0 25px rgba(172, 130, 255, 0.7);
+}
+
+
+/* ==============================
+   CADASTRO DE USUÁRIO
+============================== */
+
+.tela-cadastro {
+    width: 100%;
+    min-height: 100vh;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    padding: 30px 20px;
+
+    background-image:
+        linear-gradient(
+            rgba(5, 8, 23, 0.65),
+            rgba(5, 8, 23, 0.85)
+        ),
+        url('../imagens/galaxia-historia.png');
+
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+.formulario-cadastro {
+    width: 90%;
+    max-width: 400px;
+
+    padding: 24px 30px;
+    margin: auto 0;
+
+    background-color: rgba(5, 8, 23, 0.92);
+
+    border: 1px solid #8c70bb;
+
+    box-shadow: 0 0 25px rgba(172, 130, 255, 0.15);
+
+    text-align: center;
+}
+
+.formulario-cadastro .simbolo-topo {
+    color: #c4a5ff;
+    font-size: 30px;
+    margin-bottom: 8px;
+
+    text-shadow: 0 0 18px rgba(172, 130, 255, 0.8);
+}
+
+.formulario-cadastro .subtitulo {
+    color: #c4a5ff;
+    font-size: 10px;
+    letter-spacing: 2px;
+    margin-bottom: 12px;
+}
+
+.formulario-cadastro h1 {
+    color: #ffffff;
+    font-family: 'Press Start 2P', monospace;
+    font-size: 17px;
+    line-height: 1.6;
+    margin-bottom: 10px;
+}
+
+.formulario-cadastro .descricao {
+    color: #c8bfd8;
+    font-size: 11px;
+    margin-bottom: 18px;
+}
+
+.formulario-cadastro form {
+    display: flex;
+    flex-direction: column;
+    gap: 11px;
+    text-align: left;
+}
+
+.formulario-cadastro .campo {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.formulario-cadastro .campo label {
+    color: #c4a5ff;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.formulario-cadastro .campo input {
+    width: 100%;
+    padding: 9px 12px;
+
+    background-color: #0d1428;
+    border: 1px solid #39405d;
+
+    color: #ffffff;
+    font-family: 'Roboto Mono', monospace;
+    font-size: 12px;
+
+    outline: none;
+    transition: 0.3s;
+}
+
+.formulario-cadastro .campo input:focus {
+    border-color: #b58aff;
+    box-shadow: 0 0 10px rgba(172, 130, 255, 0.25);
+}
+
+.formulario-cadastro .campo input::placeholder {
+    color: #77738c;
+}
+
+.botao-cadastro {
+    width: 100%;
+    padding: 14px;
+    margin-top: 5px;
+
+    background-color: rgba(10, 10, 35, 0.8);
+    border: 2px solid #b58aff;
+
+    color: #ffffff;
+    font-family: 'Press Start 2P', monospace;
+    font-size: 9px;
+
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.botao-cadastro:hover {
+    background-color: #a77bff;
+    color: #080817;
+
+    box-shadow: 0 0 25px rgba(172, 130, 255, 0.7);
+    transform: scale(1.02);
+}
+
+.link-login {
+    color: #aaa0c0;
+    font-size: 11px;
+    margin-top: 18px;
+}
+
+.link-login a {
+    color: #c4a5ff;
+    font-weight: bold;
+}
+
+.link-login a:hover {
+    text-decoration: underline;
+}
+
+.voltar {
+    display: inline-block;
+    margin-top: 12px;
+
+    color: #aaa0c0;
+    font-size: 10px;
+    transition: 0.3s;
+}
+
+.voltar:hover {
+    color: #c4a5ff;
+}
+
+
+
+
+
+
+/* TELA DE LOGIN */
+
+.tela-cadastro {
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 40px 20px;
+    background: #050817;
+    color: white;
+    font-family: 'Roboto Mono', monospace;
+}
+
+.formulario-cadastro {
+    width: 100%;
+    max-width: 430px;
+    padding: 40px;
+    background: #10172b;
+    border: 1px solid #343b63;
+    border-radius: 15px;
+    text-align: center;
+    box-shadow: 0 0 25px rgba(112, 75, 255, 0.15);
+}
+
+.simbolo-topo {
+    font-size: 35px;
+    color: #a78bfa;
+    margin-bottom: 15px;
+}
+
+.subtitulo {
+    color: #a78bfa;
+    font-size: 12px;
+    letter-spacing: 2px;
+}
+
+.formulario-cadastro h1 {
+    color: #ffffff;
+    font-family: 'Press Start 2P', cursive;
+    font-size: 24px;
+    margin: 25px 0;
+}
+
+.descricao {
+    color: #b8bfd3;
+    font-size: 13px;
+    margin-bottom: 30px;
+}
+
+.campo {
+    text-align: left;
+    margin-bottom: 20px;
+}
+
+.campo label {
+    display: block;
+    color: #d8dcef;
+    font-size: 13px;
+    margin-bottom: 8px;
+}
+
+.campo input {
+    width: 100%;
+    padding: 13px;
+    background: #080e20;
+    border: 1px solid #343b63;
+    border-radius: 7px;
+    color: white;
+    font-family: 'Roboto Mono', monospace;
+    outline: none;
+    box-sizing: border-box;
+}
+
+.campo input:focus {
+    border-color: #a78bfa;
+    box-shadow: 0 0 8px rgba(167, 139, 250, 0.3);
+}
+
+.botao-cadastro {
+    width: 100%;
+    padding: 15px;
+    margin-top: 10px;
+    background: #7855e8;
+    border: none;
+    border-radius: 7px;
+    color: white;
+    font-family: 'Press Start 2P', cursive;
+    font-size: 11px;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.botao-cadastro:hover {
+    background: #9678ff;
+    transform: translateY(-2px);
+}
+
+.link-login {
+    color: #b8bfd3;
+    font-size: 12px;
+    margin-top: 25px;
+}
+
+.link-login a,
+.voltar {
+    color: #a78bfa;
+    text-decoration: none;
+}
+
+.link-login a:hover,
+.voltar:hover {
+    text-decoration: underline;
+}
+
+.voltar {
+    display: inline-block;
+    margin-top: 20px;
+    font-size: 12px;
+}
+
+
+
+
+
+
+
+
+
+
+
+/* DASHBOARD */
+
+.pagina-dashboard {
+    background: #050817;
+    color: white;
+    font-family: 'Roboto Mono', monospace;
+    margin: 0;
+}
+
+.cabecalho-dashboard {
+    height: 75px;
+    padding: 0 45px;
+    border-bottom: 1px solid #26344a;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.cabecalho-dashboard h2 {
+    color: #a78bfa;
+    font-family: 'Press Start 2P', cursive;
+    font-size: 17px;
+}
+
+.cabecalho-dashboard nav {
+    display: flex;
+    gap: 30px;
+}
+
+.cabecalho-dashboard nav a {
+    color: white;
+    text-decoration: none;
+    font-size: 13px;
+}
+
+.cabecalho-dashboard nav a:hover {
+    color: #a78bfa;
+}
+
+.conteudo-dashboard {
+    width: 90%;
+    max-width: 1250px;
+    margin: 0 auto;
+    padding: 45px 0;
+}
+
+.boas-vindas {
+    margin-bottom: 45px;
+}
+
+.boas-vindas .subtitulo {
+    color: #a78bfa;
+    letter-spacing: 3px;
+    font-size: 12px;
+}
+
+.boas-vindas h1 {
+    font-family: 'Press Start 2P', cursive;
+    font-size: 25px;
+    line-height: 1.7;
+}
+
+.boas-vindas p {
+    color: #b8bfd3;
+    font-size: 14px;
+}
+
+.area-mapa,
+.area-regioes {
+    margin-bottom: 45px;
+}
+
+.area-mapa h2,
+.area-regioes h2 {
+    color: #a78bfa;
+    font-family: 'Press Start 2P', cursive;
+    font-size: 17px;
+    margin-bottom: 15px;
+}
+
+.area-mapa p,
+.area-regioes p {
+    color: #b8bfd3;
+    font-size: 13px;
+    line-height: 1.8;
+    margin-bottom: 20px;
+}
+
+.imagem-mapa {
+    display: block;
+    width: 100%;
+    height: auto;
+    border: 2px solid #343b63;
+    border-radius: 10px;
+}
+
+.link-regioes {
+    display: block;
+    text-decoration: none;
+}
+
+.imagem-regioes {
+    display: block;
+    width: 100%;
+    height: auto;
+    border: 2px solid #343b63;
+    border-radius: 10px;
+    transition: 0.3s;
+}
+
+.link-regioes:hover .imagem-regioes {
+    border-color: #a78bfa;
+    transform: translateY(-3px);
+}
+
+.link-regioes span {
+    display: block;
+    width: fit-content;
+    margin: 20px auto 0;
+    padding: 15px 25px;
+    background: #7855e8;
+    color: white;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: bold;
+    transition: 0.3s;
+}
+
+.link-regioes span:hover {
+    background: #9678ff;
+}
+
+
+
+
+
+
+
+/* REGIÕES DO DASHBOARD */
+
+.grade-regioes {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 25px;
+    margin-top: 30px;
+}
+
+.card-regiao {
+    background: #101a30;
+    border: 2px solid #343b63;
+    border-radius: 12px;
+    overflow: hidden;
+    transition: 0.3s;
+}
+
+.card-regiao.disponivel {
+    border-color: #7855e8;
+}
+
+.card-regiao.disponivel:hover {
+    transform: translateY(-5px);
+    border-color: #a78bfa;
+}
+
+.imagem-regiao-container {
+    position: relative;
+    width: 100%;
+    height: 220px;
+    overflow: hidden;
+}
+
+.imagem-card-regiao {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: 0.3s;
+}
+
+.card-regiao.bloqueada .imagem-card-regiao {
+    filter: grayscale(100%) brightness(0.45);
+}
+
+.camada-bloqueio {
+    position: absolute;
+    inset: 0;
+    background: rgba(3, 7, 20, 0.35);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 12px;
+    color: white;
+    font-size: 11px;
+    font-weight: bold;
+}
+
+.icone-cadeado {
+    font-size: 35px;
+}
+
+.informacoes-regiao {
+    padding: 20px;
+}
+
+.informacoes-regiao h3 {
+    color: white;
+    font-size: 15px;
+    line-height: 1.7;
+    margin: 0 0 15px;
+}
+
+.status-regiao {
+    display: block;
+    font-size: 10px;
+    font-weight: bold;
+    letter-spacing: 1px;
+    margin-bottom: 15px;
+}
+
+.status-regiao.disponivel {
+    color: #4ade80;
+}
+
+.status-regiao.bloqueada {
+    color: #9299ad;
+}
+
+.botao-regiao {
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+    padding: 13px;
+    background: #7855e8;
+    color: white;
+    text-align: center;
+    text-decoration: none;
+    border: none;
+    border-radius: 6px;
+    font-family: inherit;
+    font-size: 11px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.botao-regiao:hover {
+    background: #9678ff;
+}
+
+.botao-bloqueado {
+    background: #30384d;
+    color: #9299ad;
+    cursor: not-allowed;
+}
+
+@media (max-width: 700px) {
+
+    .grade-regioes {
+        grid-template-columns: 1fr;
+    }
+
+    .imagem-regiao-container {
+        height: 190px;
+    }
+
+    .cabecalho-dashboard {
+        padding: 0 15px;
+    }
+
+    .cabecalho-dashboard nav {
+        gap: 12px;
+    }
+
+    .cabecalho-dashboard nav a {
+        font-size: 11px;
+    }
 }
