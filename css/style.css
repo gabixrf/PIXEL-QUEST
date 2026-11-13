@@ -165,7 +165,7 @@ a {
             rgba(5, 8, 23, 0.55),
             rgba(5, 8, 23, 0.65)
         ),
-        url('../imagens/galaxia-historia.png');
+        url('../imagens/teste-intro-estavel.gif');
 
     background-size: cover;
     background-position: center;
@@ -732,6 +732,147 @@ a {
 
 
 
+/* =================================
+   MAPA MÁGICO - PIXEL QUEST
+================================= */
+
+.mapa-animado {
+    position: relative;
+    width: 85%;
+    max-width: 950px;
+    margin: 30px auto;
+    isolation: isolate;
+    border-radius: 12px;
+}
+
+/* Imagem original */
+
+.imagem-mapa {
+    display: block;
+    width: 100%;
+    height: auto;
+    position: relative;
+    z-index: 1;
+    border-radius: 12px;
+    box-shadow: 0 0 25px rgba(93, 75, 220, .25);
+}
+
+/* Aura externa */
+
+.mapa-animado::before {
+    content: "";
+    position: absolute;
+    inset: -12px;
+    z-index: 0;
+    border-radius: 20px;
+    background: linear-gradient(
+        120deg,
+        #6938ff,
+        #00bfff,
+        #a855f7,
+        #6938ff
+    );
+    background-size: 300% 300%;
+    filter: blur(25px);
+    opacity: .55;
+    animation: auraMapa 6s ease infinite;
+}
+
+/* Onda de luz */
+
+.mapa-animado::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    border-radius: 12px;
+    pointer-events: none;
+    background: linear-gradient(
+        115deg,
+        transparent 25%,
+        rgba(255,255,255,.05) 40%,
+        rgba(173,145,255,.32) 50%,
+        rgba(255,255,255,.08) 58%,
+        transparent 72%
+    );
+    background-size: 250% 100%;
+    animation: luzMapa 7s ease-in-out infinite;
+}
+
+/* Partículas */
+
+.particula {
+    position: absolute;
+    z-index: 3;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #fff2ad;
+    box-shadow:
+        0 0 8px #fff,
+        0 0 16px #c084fc,
+        0 0 28px #8b5cf6;
+    pointer-events: none;
+    animation: particulaMagica 2.5s ease-in-out infinite;
+}
+
+/* Posições das partículas */
+
+.particula-1 { top: 15%; left: 12%; }
+.particula-2 { top: 28%; left: 38%; animation-delay: .4s; }
+.particula-3 { top: 18%; left: 75%; animation-delay: .8s; }
+.particula-4 { top: 55%; left: 22%; animation-delay: 1.2s; }
+.particula-5 { top: 65%; left: 55%; animation-delay: .6s; }
+.particula-6 { top: 40%; left: 88%; animation-delay: 1.5s; }
+.particula-7 { top: 82%; left: 72%; animation-delay: 1s; }
+.particula-8 { top: 75%; left: 35%; animation-delay: 1.8s; }
+
+/* Animações */
+
+@keyframes auraMapa {
+    0%, 100% {
+        opacity: .35;
+        background-position: 0% 50%;
+    }
+
+    50% {
+        opacity: .85;
+        background-position: 100% 50%;
+    }
+}
+
+@keyframes luzMapa {
+    0%, 15% {
+        background-position: 150% 0;
+    }
+
+    65%, 100% {
+        background-position: -150% 0;
+    }
+}
+
+@keyframes particulaMagica {
+    0%, 100% {
+        transform: translateY(5px) scale(.6);
+        opacity: .2;
+    }
+
+    50% {
+        transform: translateY(-15px) scale(1.6);
+        opacity: 1;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .mapa-animado::before,
+    .mapa-animado::after,
+    .particula {
+        animation: none;
+    }
+}
+
+
+
 
 
 
@@ -826,32 +967,72 @@ a {
     color: #9299ad;
 }
 
+
+/* BOTÕES DA PÁGINA DE REGIÃO */
+
+.area-regioes {
+    text-align: center;
+}
+
+/* BOTÃO EXPLORAR AULAS */
 .botao-regiao {
-    display: block;
-    width: 100%;
-    box-sizing: border-box;
-    padding: 13px;
-    background: #7855e8;
-    color: white;
+    display: inline-block;
+    padding: 14px 30px;
+    margin: 20px 10px;
+    background: linear-gradient(135deg, #ffb900, #e89b00);
+    color: #050b16;
     text-align: center;
     text-decoration: none;
-    border: none;
-    border-radius: 6px;
+    border: 2px solid #ffcf40;
+    border-radius: 8px;
     font-family: inherit;
-    font-size: 11px;
+    font-size: 13px;
     font-weight: bold;
+    letter-spacing: 1px;
     cursor: pointer;
+    transition: 0.3s ease;
+    box-shadow: 0 0 12px rgba(255, 185, 0, 0.2);
 }
 
 .botao-regiao:hover {
-    background: #9678ff;
+    background: #ffd45c;
+    transform: translateY(-3px);
+    box-shadow: 0 0 18px rgba(255, 185, 0, 0.4);
 }
 
+/* BOTÃO VOLTAR PARA AS REGIÕES */
+.botao-voltar-regioes {
+    display: block;
+    width: fit-content;
+    padding: 13px 28px;
+    margin: 20px auto;
+    background: #111a2c;
+    color: #c4b5fd;
+    text-align: center;
+    text-decoration: none;
+    border: 2px solid #6650a4;
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: bold;
+    letter-spacing: 1px;
+    transition: 0.3s ease;
+}
+
+.botao-voltar-regioes:hover {
+    background: #6650a4;
+    color: white;
+    transform: translateY(-3px);
+    box-shadow: 0 0 15px rgba(102, 80, 164, 0.4);
+}
+
+/* BOTÃO DE REGIÃO BLOQUEADA */
 .botao-bloqueado {
     background: #30384d;
     color: #9299ad;
     cursor: not-allowed;
 }
+
 
 @media (max-width: 700px) {
 
@@ -874,6 +1055,17 @@ a {
     .cabecalho-dashboard nav a {
         font-size: 11px;
     }
+}
+
+.imagem-detalhe-regiao {
+    display: block;
+    width: 90%;
+    max-width: 1200px;
+    height: 450px;
+    object-fit: cover;
+    margin: 25px auto;
+    border: 2px solid #343b63;
+    border-radius: 10px;
 }
 
 

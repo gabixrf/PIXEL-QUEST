@@ -63,64 +63,64 @@ $regiao = $regioes[$id];
 
 <body class="pagina-dashboard">
 
-<header class="cabecalho-dashboard">
+    <header class="cabecalho-dashboard">
 
-    <h2>PIXEL QUEST</h2>
+        <h2>PIXEL QUEST</h2>
 
-    <nav>
-        <a href="dashboard.php">Início</a>
-        <a href="regioes.php">Regiões</a>
-        <a href="logout.php">Sair</a>
-    </nav>
+        <nav>
+            <a href="dashboard.php">Início</a>
+            <a href="regioes.php">Regiões</a>
+            <a href="logout.php">Sair</a>
+        </nav>
 
-</header>
+    </header>
 
-<main class="conteudo-dashboard">
+    <main class="conteudo-dashboard">
 
-    <section class="boas-vindas">
+        <section class="boas-vindas">
 
-        <p class="subtitulo">SUA AVENTURA CONTINUA</p>
+            <p class="subtitulo">SUA AVENTURA CONTINUA</p>
 
-        <h1>
-            <?= htmlspecialchars($regiao["nome"]); ?>
-        </h1>
+            <h1>
+                <?= htmlspecialchars($regiao["nome"]); ?>
+            </h1>
 
-        <p>
-            <?= htmlspecialchars($regiao["descricao"]); ?>
-        </p>
+            <p>
+                <?= htmlspecialchars($regiao["descricao"]); ?>
+            </p>
 
-    </section>
+        </section>
 
-    <section class="area-mapa">
+        <section class="area-mapa">
 
-        <img
-            src="<?= htmlspecialchars($regiao["imagem"]); ?>"
-            alt="<?= htmlspecialchars($regiao["nome"]); ?>"
-            class="imagem-mapa"
-        >
+            <img
+                src="<?= htmlspecialchars($regiao["imagem"]); ?>"
+                alt="<?= htmlspecialchars($regiao["nome"]); ?>"
+                class="imagem-detalhe-regiao"
+            >
 
-    </section>
+        </section>
 
-    <section class="area-regioes">
+        <section class="area-regioes">
 
-        <h2>DESAFIOS DA REGIÃO</h2>
+            <h2>DESAFIOS DA REGIÃO</h2>
 
-        <p>
-            Prepare-se para aprender novos conceitos
-            e superar os desafios deste território!
-        </p>
+            <p>
+                Prepare-se para aprender novos conceitos
+                e superar os desafios deste território!
+            </p>
 
-        <a href="aulas.php?id=<?= (int) $id; ?>" class="botao-regiao">
-            EXPLORAR AULAS
+            <a href="aulas.php?id=<?= (int) $id; ?>" class="botao-regiao">
+                EXPLORAR AULAS
+            </a>
+
+        </section>
+
+        <a href="regioes.php" class="botao-voltar-regioes">
+            ← VOLTAR PARA AS REGIÕES
         </a>
 
-    </section>
-
-    <a href="regioes.php" class="botao-regiao">
-        VOLTAR PARA AS REGIÕES
-    </a>
-
-</main>
+    </main>
 
 </body>
 </html>

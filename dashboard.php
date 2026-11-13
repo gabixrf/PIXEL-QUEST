@@ -80,13 +80,16 @@ $regioes = [
 
     </section>
 
-    <section class="area-mapa">
+    
+<section class="area-mapa">
 
-        <h2>MAPA DO MUNDO</h2>
+    <h2>MAPA DO MUNDO</h2>
 
-        <p>
-            Seu universo de aventuras está esperando por você.
-        </p>
+    <p>
+        Seu universo de aventuras está esperando por você.
+    </p>
+
+    <div class="mapa-animado">
 
         <img
             src="imagens/mapa-mundo.png"
@@ -94,7 +97,18 @@ $regioes = [
             class="imagem-mapa"
         >
 
-    </section>
+        <span class="particula particula-1"></span>
+        <span class="particula particula-2"></span>
+        <span class="particula particula-3"></span>
+        <span class="particula particula-4"></span>
+        <span class="particula particula-5"></span>
+        <span class="particula particula-6"></span>
+        <span class="particula particula-7"></span>
+        <span class="particula particula-8"></span>
+
+    </div>
+
+</section>
 
     <section class="area-regioes">
 
