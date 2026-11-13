@@ -14,25 +14,25 @@ $regioes = [
         "nome" => "Floresta da Sequência",
         "imagem" => "imagens/floresta-sequencia.png",
         "status" => "disponivel",
-        "link" => "regiao1.php"
+        "link" => "regiao.php?id=1"
     ],
     [
         "nome" => "Vale das Variáveis",
         "imagem" => "imagens/vale-variaveis.png",
-        "status" => "bloqueada",
-        "link" => "regiao2.php"
+        "status" => "disponivel",
+        "link" => "regiao.php?id=2"
     ],
     [
         "nome" => "Montanhas das Decisões",
         "imagem" => "imagens/montanhas-decisoes.png",
-        "status" => "bloqueada",
-        "link" => "regiao3.php"
+        "status" => "disponivel",
+        "link" => "regiao.php?id=3"
     ],
     [
         "nome" => "Cavernas da Repetição",
         "imagem" => "imagens/cavernas-repeticao.png",
-        "status" => "bloqueada",
-        "link" => "regiao4.php"
+        "status" => "disponivel",
+        "link" => "regiao.php?id=4"
     ]
 ];
 ?>

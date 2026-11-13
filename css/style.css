@@ -875,3 +875,210 @@ a {
         font-size: 11px;
     }
 }
+
+
+
+
+/* =================================
+   PIXEL QUEST - SISTEMA DE AULAS
+================================= */
+
+.pagina-aulas {
+    width: 90%;
+    max-width: 1200px;
+    min-height: calc(100vh - 75px);
+    margin: 60px auto;
+    padding-bottom: 60px;
+}
+
+/* Título da região */
+
+.pagina-aulas h2 {
+    color: #ffffff;
+    font-family: 'Press Start 2P', monospace;
+    font-size: 20px;
+    line-height: 1.8;
+    margin-bottom: 12px;
+    letter-spacing: 1px;
+}
+
+.pagina-aulas > p {
+    color: #a7afc5;
+    font-size: 13px;
+    line-height: 1.8;
+    max-width: 700px;
+}
+
+/* Título da seção */
+
+.pagina-aulas h3 {
+    color: #a78bfa;
+    font-family: 'Press Start 2P', monospace;
+    font-size: 12px;
+    line-height: 1.8;
+    margin: 55px 0 25px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+/* Lista de aulas */
+
+.lista-aulas {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 22px;
+}
+
+/* Cartão */
+
+.card-aula {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    min-height: 210px;
+    padding: 28px;
+    background: linear-gradient(135deg, #151d38, #0c1328);
+    border: 1px solid #303b60;
+    border-radius: 14px;
+    overflow: hidden;
+    transition: 0.3s ease;
+}
+
+.card-aula::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+    background: #7855e8;
+}
+
+.card-aula::after {
+    content: "";
+    position: absolute;
+    width: 150px;
+    height: 150px;
+    right: -65px;
+    top: -65px;
+    border: 1px solid rgba(167, 139, 250, 0.15);
+    border-radius: 50%;
+    box-shadow:
+        0 0 0 20px rgba(167, 139, 250, 0.03),
+        0 0 0 40px rgba(167, 139, 250, 0.02);
+    pointer-events: none;
+}
+
+.card-aula:hover {
+    transform: translateY(-6px);
+    border-color: #8968f5;
+    box-shadow: 0 12px 30px rgba(80, 50, 180, 0.18);
+}
+
+/* Conteúdo do cartão */
+
+.card-aula h4 {
+    color: #ffffff;
+    font-family: 'Roboto Mono', monospace;
+    font-size: 17px;
+    margin: 0 0 14px;
+    line-height: 1.5;
+}
+
+.card-aula p {
+    color: #a7afc5;
+    font-size: 12px;
+    line-height: 1.8;
+    margin: 0 0 25px;
+}
+
+/* Botão */
+
+.card-aula a {
+    position: relative;
+    z-index: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    align-self: flex-start;
+    padding: 12px 20px;
+    background: #7855e8;
+    color: #ffffff;
+    border-radius: 6px;
+    text-decoration: none;
+    font-size: 10px;
+    font-weight: bold;
+    letter-spacing: 1px;
+    transition: 0.3s;
+}
+
+.card-aula a:hover {
+    background: #9678ff;
+    box-shadow: 0 0 18px rgba(120, 85, 232, 0.4);
+}
+
+/* Mensagem sem aulas */
+
+.pagina-aulas .sem-aulas {
+    color: #a7afc5;
+    background: #101a30;
+    border: 1px dashed #465078;
+    border-radius: 10px;
+    padding: 30px;
+    text-align: center;
+}
+
+/* Voltar */
+
+.pagina-aulas > a {
+    display: inline-block;
+    margin-top: 35px;
+    color: #a78bfa;
+    text-decoration: none;
+    font-size: 12px;
+    transition: 0.3s;
+}
+
+.pagina-aulas > a:hover {
+    color: #ffffff;
+}
+
+/* Cabeçalho da página */
+
+.cabecalho-dashboard {
+    background-color: #080e20;
+    position: relative;
+    z-index: 2;
+}
+
+.cabecalho-dashboard h2 {
+    margin: 0;
+}
+
+/* Responsividade */
+
+@media (max-width: 750px) {
+    .lista-aulas {
+        grid-template-columns: 1fr;
+    }
+
+    .pagina-aulas {
+        width: 92%;
+        margin: 35px auto;
+    }
+}
+
+@media (max-width: 700px) {
+    .cabecalho-dashboard {
+        padding: 0 20px;
+    }
+
+    .cabecalho-dashboard h2 {
+        font-size: 12px;
+    }
+
+    .pagina-aulas h2 {
+        font-size: 16px;
+    }
+}
