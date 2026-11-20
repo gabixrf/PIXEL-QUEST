@@ -1,9 +1,21 @@
-
 <?php
 
 session_start();
 
 require_once "conexao.php";
+
+// Volta para o cadastro mostrando a mensagem no cartão (sem apagar o que a pessoa digitou)
+function voltar_com_erro(string $mensagem): void
+{
+    $_SESSION["auth_erro"] = $mensagem;
+    $_SESSION["auth_antigos"] = [
+        "nome" => trim($_POST["nome"] ?? ""),
+        "usuario" => trim($_POST["usuario"] ?? ""),
+        "email" => trim($_POST["email"] ?? ""),
+    ];
+    header("Location: cadastro_usuario.php");
+    exit;
+}
 
 // Verifica se o formulário foi enviado pelo método POST
 if ($_SERVER["REQUEST_METHOD"] !== "POST") {
@@ -26,22 +38,22 @@ if (
     empty($senha) ||
     empty($confirmar_senha)
 ) {
-    die("Preencha todos os campos.");
+    voltar_com_erro("Preencha todos os campos.");
 }
 
 // Verifica se o e-mail é válido
 if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-    die("Digite um e-mail válido.");
+    voltar_com_erro("Digite um e-mail válido.");
 }
 
 // Verifica o tamanho da senha
 if (strlen($senha) < 6) {
-    die("A senha precisa ter pelo menos 6 caracteres.");
+    voltar_com_erro("A senha precisa ter pelo menos 6 caracteres.");
 }
 
 // Confere se as senhas são iguais
 if ($senha !== $confirmar_senha) {
-    die("As senhas não coincidem.");
+    voltar_com_erro("As senhas não coincidem.");
 }
 
 try {
@@ -54,7 +66,7 @@ try {
     $stmt->execute([$usuario, $email]);
 
     if ($stmt->fetch()) {
-        die("Esse nome de usuário ou e-mail já está cadastrado.");
+        voltar_com_erro("Esse nome de usuário ou e-mail já está cadastrado.");
     }
 
     // Protege a senha usando hash
@@ -72,10 +84,14 @@ try {
         $senha_hash
     ]);
 
+    // Gera um novo ID de sessão (evita session fixation)
+    session_regenerate_id(true);
+
     // Guarda os dados do usuário na sessão
     $_SESSION["usuario_id"] = $conexao->lastInsertId();
     $_SESSION["usuario_nome"] = $nome;
     $_SESSION["usuario"] = $usuario;
+    $_SESSION["tipo"] = "aluno";
 
     // Redireciona para o painel
     header("Location: dashboard.php");
@@ -83,6 +99,7 @@ try {
 
 } catch (PDOException $erro) {
 
-    die("Erro ao cadastrar usuário: " . $erro->getMessage());
+    error_log($erro->getMessage());
+    voltar_com_erro("Não foi possível criar a conta agora. Tente novamente.");
 
 }
