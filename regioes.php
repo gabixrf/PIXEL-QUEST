@@ -1,163 +1,161 @@
-
 <?php
 session_start();
+require_once "conexao.php";
 
 if (!isset($_SESSION["usuario_id"])) {
     header("Location: login.php");
     exit;
 }
 
-$nome = $_SESSION["usuario_nome"] ?? "Aventureiro";
+$uid = (int) $_SESSION["usuario_id"];
 
-// Progresso provisório
-$regioes = [
-    [
-        "id" => 1,
-        "nome" => "Floresta da Sequência",
-        "imagem" => "imagens/floresta-sequencia.png",
-        "status" => "disponivel"
-    ],
-    [
-        "id" => 2,
-        "nome" => "Vale das Variáveis",
-        "imagem" => "imagens/vale-variaveis.png",
-        "status" => "disponivel"
-    ],
-    [
-        "id" => 3,
-        "nome" => "Montanhas das Decisões",
-        "imagem" => "imagens/montanhas-decisoes.png",
-        "status" => "disponivel"
-    ],
-    [
-        "id" => 4,
-        "nome" => "Cavernas da Repetição",
-        "imagem" => "imagens/cavernas-repeticao.png",
-        "status" => "disponivel"
-    ]
-];
+// Versão do arquivo (data de modificação): obriga o Chrome a recarregar CSS/JS quando mudarem
+function versao_arquivo(string $caminho): int
+{
+    $t = @filemtime(__DIR__ . "/" . $caminho);
+    return $t ?: 1;
+}
+
+// Define o visual da ilha pelo nome da região (ou pela ordem, se o nome não bater)
+function tema_da_regiao(string $nome, int $ordem): string
+{
+    $n = mb_strtolower($nome);
+    foreach (["floresta" => "floresta", "vale" => "vale", "montanha" => "montanhas", "caverna" => "cavernas"] as $chave => $tema) {
+        if (str_contains($n, $chave)) return $tema;
+    }
+    return ["floresta", "vale", "montanhas", "cavernas"][max(0, $ordem - 1) % 4];
+}
+
+// Regiões ativas
+$lista = $conexao->query(
+    "SELECT id, nome, descricao, ordem FROM regioes WHERE ativa = 1 ORDER BY ordem"
+)->fetchAll();
+
+// Aulas publicadas com o progresso do aluno em cada uma
+$st = $conexao->prepare(
+    "SELECT a.id, a.regiao_id, a.titulo,
+        (SELECT COUNT(*) FROM exercicios e WHERE e.aula_id = a.id AND e.ativo = 1) AS total,
+        (SELECT COUNT(*) FROM progresso p
+           INNER JOIN exercicios e ON e.id = p.exercicio_id
+           WHERE e.aula_id = a.id AND e.ativo = 1 AND p.usuario_id = ? AND p.concluido = 1) AS feitos
+     FROM aulas a WHERE a.publicada = 1 ORDER BY a.regiao_id, a.ordem"
+);
+$st->execute([$uid]);
+
+$aulas = [];
+foreach ($st->fetchAll() as $a) {
+    $aulas[$a["regiao_id"]][] = [
+        "id" => (int) $a["id"], "titulo" => $a["titulo"],
+        "total" => (int) $a["total"], "feitos" => (int) $a["feitos"],
+    ];
+}
+
+// Missão ativa de cada região
+$st = $conexao->prepare(
+    "SELECT m.regiao_id, m.titulo,
+        (SELECT COUNT(*) FROM progresso p WHERE p.missao_id = m.id AND p.usuario_id = ? AND p.concluido = 1) AS ok
+     FROM missoes m WHERE m.ativa = 1"
+);
+$st->execute([$uid]);
+$missoes = [];
+foreach ($st->fetchAll() as $m) $missoes[$m["regiao_id"]] = $m;
+
+// Monta os dados de cada região (mesma regra de desbloqueio: concluir a anterior)
+$regioes = [];
+$anterior_ok = true;
+$nome_anterior = "";
+
+foreach ($lista as $r) {
+    $rid = (int) $r["id"];
+    $as = $aulas[$rid] ?? [];
+    $total = array_sum(array_column($as, "total"));
+    $feitos = array_sum(array_column($as, "feitos"));
+
+    $bloqueada = !$anterior_ok;
+    $completa = !$bloqueada && $feitos >= $total;   // 0 de 0 conta como concluída
+
+    $m = $missoes[$rid] ?? null;
+    if (!$m) $missao = "nenhuma";
+    elseif ($bloqueada || $feitos < $total) $missao = "trancada";
+    elseif ((int) $m["ok"] > 0) $missao = "feita";
+    else $missao = "aberta";
+
+    $regioes[] = [
+        "id" => $rid,
+        "nome" => $r["nome"],
+        "descricao" => $r["descricao"] ?? "",
+        "tema" => tema_da_regiao($r["nome"], (int) $r["ordem"]),
+        "total" => $total, "feitos" => $feitos,
+        "bloqueada" => $bloqueada, "completa" => $completa,
+        "missao" => $missao, "missaoTitulo" => $m["titulo"] ?? "",
+        "anterior" => $nome_anterior,
+        "aulas" => $as,
+    ];
+
+    $anterior_ok = $completa;
+    $nome_anterior = $r["nome"];
+}
 ?>
-
 <!DOCTYPE html>
 <html lang="pt-br">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
     <title>PIXEL QUEST | Regiões</title>
-
-    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/selecao-regioes.css?v=<?= versao_arquivo("css/selecao-regioes.css") ?>">
 </head>
+<body class="tela-ilhas">
 
-<body class="pagina-dashboard">
+<main class="tabuleiro">
 
-<header class="cabecalho-dashboard">
-
-    <h2>PIXEL QUEST</h2>
-
-    <nav>
-        <a href="dashboard.php">Início</a>
-        <a href="regioes.php">Regiões</a>
-        <a href="logout.php">Sair</a>
-    </nav>
-
-</header>
-
-<main class="conteudo-dashboard">
-
-    <section class="boas-vindas">
-
+    <header class="topo-ilhas">
         <p class="subtitulo">EXPLORE NOVOS TERRITÓRIOS</p>
+        <h1>Regiões do reino</h1>
+    </header>
 
-        <h1>Suas Regiões</h1>
+    <a href="dashboard.php" class="fechar" aria-label="Voltar ao mapa">✕</a>
 
-        <p>
-            Olá, <?= htmlspecialchars($nome, ENT_QUOTES, 'UTF-8'); ?>!
-            Escolha seu próximo destino e continue sua jornada.
-        </p>
+    <?php if ($regioes): ?>
+        <div class="ilhas">
+            <?php foreach ($regioes as $r): ?>
+                <button type="button"
+                        class="ilha <?= $r["bloqueada"] ? "bloqueada" : "livre" ?>"
+                        data-id="<?= $r["id"] ?>"
+                        aria-haspopup="dialog"
+                        aria-label="<?= htmlspecialchars($r["nome"]) ?>: ver informações">
 
-    </section>
+                    <span class="ilha-arte" data-ilha data-tema="<?= htmlspecialchars($r["tema"]) ?>"></span>
+                    <?php if ($r["bloqueada"]): ?><span class="cadeado" aria-hidden="true">🔒</span><?php endif; ?>
 
-    <section class="area-regioes">
+                    <span class="placa"><?= htmlspecialchars($r["nome"]) ?></span>
 
-        <h2>OS QUATRO TERRITÓRIOS</h2>
-
-        <p>
-            Complete os desafios para desbloquear novas regiões.
-        </p>
-
-        <div class="grade-regioes">
-
-            <?php foreach ($regioes as $indice => $regiao): ?>
-
-                <article class="card-regiao <?= $regiao['status']; ?>">
-
-                    <div class="imagem-regiao-container">
-
-                        <img
-                            src="<?= htmlspecialchars($regiao['imagem']); ?>"
-                            alt="<?= htmlspecialchars($regiao['nome']); ?>"
-                            class="imagem-card-regiao"
-                        >
-
-                        <?php if ($regiao['status'] === 'bloqueada'): ?>
-
-                            <div class="camada-bloqueio">
-                                <span class="icone-cadeado">🔒</span>
-                                <span>REGIÃO BLOQUEADA</span>
-                            </div>
-
-                        <?php endif; ?>
-
-                    </div>
-
-                    <div class="informacoes-regiao">
-
-                        <h3>
-                            <?= ($indice + 1) . ". " .
-                            htmlspecialchars($regiao['nome']); ?>
-                        </h3>
-
-                        <?php if ($regiao['status'] === 'disponivel'): ?>
-
-                            <span class="status-regiao disponivel">
-                                DISPONÍVEL
+                    <span class="contadores">
+                        <span class="pilula <?= $r["completa"] && $r["total"] > 0 ? "feita" : "" ?>">
+                            <span>Exercícios</span>
+                            <span><?= $r["bloqueada"] ? "🔒" : "✦ " . $r["feitos"] . "/" . $r["total"] ?></span>
+                        </span>
+                        <?php if ($r["missao"] !== "nenhuma"): ?>
+                            <span class="pilula missao <?= $r["missao"] === "trancada" ? "trancada" : "" ?>">
+                                <span>Missão</span>
+                                <span><?= $r["missao"] === "trancada" ? "🔒" : ($r["missao"] === "feita" ? "✓" : "✦") ?></span>
                             </span>
-
-                            <a
-                                href="regiao.php?id=<?= $regiao['id']; ?>"
-                                class="botao-regiao"
-                            >
-                                EXPLORAR REGIÃO
-                            </a>
-
-                        <?php else: ?>
-
-                            <span class="status-regiao bloqueada">
-                                CONCLUA A REGIÃO ANTERIOR
-                            </span>
-
-                            <button
-                                class="botao-regiao botao-bloqueado"
-                                disabled
-                            >
-                                BLOQUEADA
-                            </button>
-
                         <?php endif; ?>
-
-                    </div>
-
-                </article>
-
+                    </span>
+                </button>
             <?php endforeach; ?>
-
         </div>
-
-    </section>
+    <?php else: ?>
+        <p class="vazio">Nenhuma região disponível por enquanto. Volte em breve!</p>
+    <?php endif; ?>
 
 </main>
 
+<dialog id="painel" aria-labelledby="painel-titulo">
+    <div class="p-corpo"></div>
+    <form method="dialog"><button class="p-fechar" aria-label="Fechar">✕</button></form>
+</dialog>
+
+<script id="dados" type="application/json"><?= json_encode($regioes, JSON_HEX_TAG | JSON_HEX_AMP | JSON_UNESCAPED_UNICODE) ?></script>
+<script type="module" src="js/selecao-regioes.js?v=<?= versao_arquivo("js/selecao-regioes.js") ?>"></script>
 </body>
 </html>

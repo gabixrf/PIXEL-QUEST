@@ -83,11 +83,6 @@ $regioes = [
     
 <section class="area-mapa">
 
-    <h2>MAPA DO MUNDO</h2>
-
-    <p>
-        Seu universo de aventuras está esperando por você.
-    </p>
 
     <div class="mapa-animado">
 
@@ -110,80 +105,7 @@ $regioes = [
 
 </section>
 
-    <section class="area-regioes">
-
-        <h2>SUA JORNADA</h2>
-
-        <p>
-            Complete os desafios de cada região para desbloquear
-            o próximo território.
-        </p>
-
-        <div class="grade-regioes">
-
-            <?php foreach ($regioes as $indice => $regiao): ?>
-
-                <article class="card-regiao <?= $regiao['status']; ?>">
-
-                    <div class="imagem-regiao-container">
-
-                        <img
-                            src="<?= htmlspecialchars($regiao['imagem']); ?>"
-                            alt="<?= htmlspecialchars($regiao['nome']); ?>"
-                            class="imagem-card-regiao"
-                        >
-
-                        <?php if ($regiao['status'] === 'bloqueada'): ?>
-
-                            <div class="camada-bloqueio">
-                                <span class="icone-cadeado">🔒</span>
-                                <span>REGIÃO BLOQUEADA</span>
-                            </div>
-
-                        <?php endif; ?>
-
-                    </div>
-
-                    <div class="informacoes-regiao">
-
-                        <h3>
-                            <?= ($indice + 1) . ". " .
-                            htmlspecialchars($regiao['nome']); ?>
-                        </h3>
-
-                        <?php if ($regiao['status'] === 'disponivel'): ?>
-
-                            <span class="status-regiao disponivel">
-                                DISPONÍVEL
-                            </span>
-
-                            <a href="<?= htmlspecialchars($regiao['link']); ?>"
-                               class="botao-regiao">
-                                EXPLORAR REGIÃO
-                            </a>
-
-                        <?php else: ?>
-
-                            <span class="status-regiao bloqueada">
-                                CONCLUA A REGIÃO ANTERIOR
-                            </span>
-
-                            <button class="botao-regiao botao-bloqueado"
-                                    disabled>
-                                BLOQUEADA
-                            </button>
-
-                        <?php endif; ?>
-
-                    </div>
-
-                </article>
-
-            <?php endforeach; ?>
-
-        </div>
-
-    </section>
+    
 
 </main>
 

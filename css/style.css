@@ -1,4 +1,3 @@
-
 @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Roboto+Mono:wght@400;500;600&display=swap');
 
 /* ==============================
@@ -656,8 +655,9 @@ a {
 
 .boas-vindas h1 {
     font-family: 'Press Start 2P', cursive;
-    font-size: 25px;
+    font-size: clamp(16px, 3.4vw, 25px);   /* antes: 25px fixo (estourava no celular) */
     line-height: 1.7;
+    overflow-wrap: anywhere;
 }
 
 .boas-vindas p {
@@ -877,101 +877,99 @@ a {
 
 
 
-/* REGIÕES DO DASHBOARD */
-
-.grade-regioes {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 25px;
-    margin-top: 30px;
-}
-
-.card-regiao {
-    background: #101a30;
-    border: 2px solid #343b63;
-    border-radius: 12px;
-    overflow: hidden;
-    transition: 0.3s;
-}
-
-.card-regiao.disponivel {
-    border-color: #7855e8;
-}
-
-.card-regiao.disponivel:hover {
-    transform: translateY(-5px);
-    border-color: #a78bfa;
-}
-
-.imagem-regiao-container {
-    position: relative;
-    width: 100%;
-    height: 220px;
-    overflow: hidden;
-}
-
-.imagem-card-regiao {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
-    transition: 0.3s;
-}
-
-.card-regiao.bloqueada .imagem-card-regiao {
-    filter: grayscale(100%) brightness(0.45);
-}
-
-.camada-bloqueio {
-    position: absolute;
-    inset: 0;
-    background: rgba(3, 7, 20, 0.35);
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    gap: 12px;
-    color: white;
-    font-size: 11px;
-    font-weight: bold;
-}
-
-.icone-cadeado {
-    font-size: 35px;
-}
-
-.informacoes-regiao {
-    padding: 20px;
-}
-
-.informacoes-regiao h3 {
-    color: white;
-    font-size: 15px;
-    line-height: 1.7;
-    margin: 0 0 15px;
-}
-
-.status-regiao {
-    display: block;
-    font-size: 10px;
-    font-weight: bold;
-    letter-spacing: 1px;
-    margin-bottom: 15px;
-}
-
-.status-regiao.disponivel {
-    color: #4ade80;
-}
-
-.status-regiao.bloqueada {
-    color: #9299ad;
-}
-
-
-/* BOTÕES DA PÁGINA DE REGIÃO */
+/* =================================
+   PÁGINA DE REGIÃO (regiao.php)
+================================= */
 
 .area-regioes {
     text-align: center;
+}
+
+/* Imagem da região (antes: altura fixa de 450px, enorme no celular) */
+.imagem-detalhe-regiao {
+    display: block;
+    width: 90%;
+    max-width: 1200px;
+    height: clamp(200px, 38vw, 450px);
+    object-fit: cover;
+    margin: 25px auto;
+    border: 2px solid #343b63;
+    border-radius: 10px;
+}
+
+/* Barra de progresso da região */
+.regiao-barra {
+    height: 10px;
+    max-width: 420px;
+    margin: 14px auto 22px;
+    background: #080e20;
+    border: 1px solid #343b63;
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+.regiao-barra div {
+    height: 100%;
+    background: linear-gradient(90deg, #7855e8, #a78bfa);
+    transition: width 0.4s ease;
+}
+
+/* Lista de aulas da região */
+.regiao-aulas {
+    list-style: none;
+    display: grid;
+    gap: 8px;
+    max-width: 560px;
+    margin: 0 auto 25px;
+    text-align: left;
+}
+
+.regiao-aulas li {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 11px 14px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid #343b63;
+    border-radius: 8px;
+    transition: 0.3s;
+}
+
+.regiao-aulas li:hover {
+    border-color: #8968f5;
+    background: rgba(120, 85, 232, 0.08);
+}
+
+.regiao-aulas li.feita {
+    border-color: #1f6f43;
+    background: rgba(74, 222, 128, 0.06);
+}
+
+.regiao-aulas a {
+    color: #ffffff;
+    font-size: 13px;
+    font-weight: 600;
+    transition: 0.3s;
+}
+
+.regiao-aulas a:hover {
+    color: #a78bfa;
+}
+
+.regiao-aulas a span {
+    color: #a78bfa;
+    margin-right: 6px;
+}
+
+.regiao-aulas li.feita a span {
+    color: #4ade80;
+}
+
+.regiao-aulas small {
+    margin-left: auto;
+    color: #9299ad;
+    font-size: 11px;
+    white-space: nowrap;
 }
 
 /* BOTÃO EXPLORAR AULAS */
@@ -1004,6 +1002,7 @@ a {
 .botao-voltar-regioes {
     display: block;
     width: fit-content;
+    max-width: 100%;
     padding: 13px 28px;
     margin: 20px auto;
     background: #111a2c;
@@ -1033,17 +1032,18 @@ a {
     cursor: not-allowed;
 }
 
+/* Foco visível para navegação por teclado */
+.cabecalho-dashboard nav a:focus-visible,
+.botao-regiao:focus-visible,
+.botao-voltar-regioes:focus-visible,
+.regiao-aulas a:focus-visible {
+    outline: 3px solid #ffb900;
+    outline-offset: 3px;
+}
 
+/* Telas menores (removidas as regras de .grade-regioes e .imagem-regiao-container,
+   que não são usadas por nenhuma página) */
 @media (max-width: 700px) {
-
-    .grade-regioes {
-        grid-template-columns: 1fr;
-    }
-
-    .imagem-regiao-container {
-        height: 190px;
-    }
-
     .cabecalho-dashboard {
         padding: 0 15px;
     }
@@ -1055,17 +1055,35 @@ a {
     .cabecalho-dashboard nav a {
         font-size: 11px;
     }
+
+    .imagem-detalhe-regiao {
+        width: 100%;
+    }
+
+    .botao-regiao,
+    .botao-voltar-regioes {
+        width: 100%;
+        margin-left: 0;
+        margin-right: 0;
+    }
+
+    .regiao-aulas li {
+        flex-wrap: wrap;
+    }
 }
 
-.imagem-detalhe-regiao {
-    display: block;
-    width: 90%;
-    max-width: 1200px;
-    height: 450px;
-    object-fit: cover;
-    margin: 25px auto;
-    border: 2px solid #343b63;
-    border-radius: 10px;
+@media (prefers-reduced-motion: reduce) {
+    .regiao-barra div,
+    .regiao-aulas li,
+    .botao-regiao,
+    .botao-voltar-regioes {
+        transition: none;
+    }
+
+    .botao-regiao:hover,
+    .botao-voltar-regioes:hover {
+        transform: none;
+    }
 }
 
 
