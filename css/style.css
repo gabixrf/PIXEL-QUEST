@@ -516,156 +516,6 @@ body.pagina-intro.saindo-pagina::after { animation: escurecer .45s steps(6) forw
     .fagulha { display: none; }
 }
 
-/* ==============================
-   TELA DA HISTÓRIA
-============================== */
-
-.tela-historia {
-    width: 100%;
-    height: 100vh;
-
-    display: flex;
-    justify-content: center;
-    align-items: center;
-
-    position: relative;
-
-    background-image:
-        linear-gradient(
-            rgba(5, 8, 23, 0.55),
-            rgba(5, 8, 23, 0.65)
-        ),
-        url('../imagens/teste-intro-estavel.gif');
-
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
-}
-
-.conteudo-historia {
-    width: 85%;
-    max-width: 850px;
-
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-}
-
-.pular-historia {
-    position: absolute;
-    top: 35px;
-    right: 45px;
-
-    padding: 12px 18px;
-
-    color: #d5c9eb;
-    background: rgba(10, 10, 35, 0.6);
-
-    border: 1px solid #8c70bb;
-
-    font-family: 'Roboto Mono', monospace;
-    font-size: 11px;
-
-    cursor: pointer;
-    transition: 0.3s;
-}
-
-.pular-historia:hover {
-    color: #ffffff;
-    background-color: rgba(145, 105, 220, 0.35);
-    border-color: #c4a5ff;
-}
-
-.identificacao {
-    color: #c4a5ff;
-    font-size: 12px;
-    letter-spacing: 3px;
-    margin-bottom: 5px;
-}
-
-.titulo-historia {
-    color: #ffffff;
-    font-family: 'Press Start 2P', monospace;
-    font-size: clamp(17px, 3vw, 25px);
-    text-align: center;
-    line-height: 1.8;
-    margin-bottom: 15px;
-
-    text-shadow: 0 0 15px rgba(172, 130, 255, 0.5);
-}
-
-.subtitulo-historia {
-    color: #c8bfd8;
-    font-size: 14px;
-    text-align: center;
-    margin-bottom: 25px;
-}
-
-#textoHistoria {
-    min-height: 100px;
-    max-width: 750px;
-
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    color: #ffffff;
-    font-family: 'Roboto Mono', monospace;
-    font-size: 18px;
-    line-height: 1.8;
-
-    opacity: 0;
-    transition: opacity 0.7s ease;
-}
-
-#textoHistoria.visivel {
-    opacity: 1;
-}
-
-.indicador {
-    display: flex;
-    gap: 8px;
-    margin-top: 25px;
-}
-
-.indicador span {
-    width: 7px;
-    height: 7px;
-
-    border-radius: 50%;
-    background-color: #a77bff;
-
-    box-shadow: 0 0 10px rgba(172, 130, 255, 0.7);
-}
-
-.botao-iniciar {
-    display: none;
-
-    color: #ffffff;
-    font-family: 'Press Start 2P', monospace;
-    font-size: 11px;
-
-    padding: 18px 25px;
-    margin-top: 30px;
-
-    border: 2px solid #a77bff;
-    background-color: rgba(10, 10, 35, 0.7);
-
-    transition: 0.3s;
-}
-
-.botao-iniciar.mostrar {
-    display: inline-block;
-}
-
-.botao-iniciar:hover {
-    color: #080817;
-    background-color: #a77bff;
-
-    box-shadow: 0 0 25px rgba(172, 130, 255, 0.7);
-}
-
 
 /* ==============================
    CADASTRO DE USUÁRIO
@@ -1101,6 +951,58 @@ body.pagina-intro.saindo-pagina::after { animation: escurecer .45s steps(6) forw
     background: #9678ff;
 }
 
+
+
+.pagina-inicio .topo-inicio {
+    position: relative;
+    isolation: isolate;
+}
+
+.pagina-inicio .topo-inicio::before {
+    content: "";
+    position: absolute;
+    inset: -22px -26px;
+    z-index: -1;
+    border-radius: 18px;
+    background: rgba(4, 7, 24, 0.66);
+    box-shadow: 0 0 36px 22px rgba(4, 7, 24, 0.66);
+    pointer-events: none;
+}
+
+/* 2) sombra nas letras: contorno escuro curto + halo escuro suave */
+.pagina-inicio .boas-vindas .subtitulo,
+.pagina-inicio .boas-vindas p,
+.pagina-inicio .area-trilha h2,
+.pagina-inicio .area-trilha > p,
+.pagina-inicio .trilha strong,
+.pagina-inicio .trilha-desc {
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.95), 0 0 12px rgba(3, 5, 20, 0.95);
+}
+
+.pagina-inicio .boas-vindas h1 {
+    text-shadow:
+        3px 3px 0 #3b2a85,
+        0 4px 16px rgba(0, 0, 0, 0.75),
+        0 0 24px rgba(167, 139, 250, 0.45);
+}
+
+/* 3) textos secundários mais claros (eram #9299ad e #b8bfd3) */
+.pagina-inicio .boas-vindas p:not(.subtitulo) { color: #d3d8e8; }
+.pagina-inicio .area-trilha > p              { color: #cdd2e4; }
+.pagina-inicio .trilha-desc                  { color: #c2c8dc; }
+
+/* bolinhas da trilha: anel escuro separa da água */
+.pagina-inicio .trilha-no {
+    box-shadow: 0 0 0 3px #060a20, 0 3px 8px rgba(0, 0, 0, 0.6);
+}
+
+/* telas estreitas: coluna única, halo menor para não gerar rolagem lateral */
+@media (max-width: 1000px) {
+    .pagina-inicio .topo-inicio::before {
+        inset: -12px -4px;
+        box-shadow: 0 0 24px 14px rgba(4, 7, 24, 0.66);
+    }
+}
 
 
 /* =================================
@@ -2324,391 +2226,317 @@ body.pagina-intro.saindo-pagina::after { animation: escurecer .45s steps(6) forw
 
 
 
-/* =====================================================
-   TELA DE HISTÓRIA (historia.php)
-   Cole este bloco no FINAL do seu style.css.
-   Classes com prefixo h- e animações com prefixo hq-,
-   sem conflito com o restante do arquivo.
-===================================================== */
+/* =====================================
+   PIXEL QUEST - TELA DE HISTÓRIA  (NOVA)
+   Fica no FINAL do arquivo e substitui os dois blocos antigos de história.
+   Os @keyframes daqui começam com "his-" para não sobrescrever os da tela
+   inicial (antes, o "subir" e o "piscar" da história quebravam as faíscas).
+===================================== */
 
-/* =====================================================
-   PIXEL QUEST - TELA DE HISTÓRIA
-   Mesma identidade da tela inicial: fundo #050817,
-   roxo #b58aff / #a77bff, sombra dura #3b2a85, ouro #ffd36b,
-   Press Start 2P + Roboto Mono.
-===================================================== */
-
-:root {
-    --fundo: #050817;
-    --roxo: #b58aff;
-    --roxo-2: #a77bff;
-    --roxo-claro: #c4a5ff;
-    --roxo-esc: #3b2a85;
-    --borda: #8c70bb;
-    --ouro: #ffb900;
-    --ouro-claro: #ffd36b;
-    --texto: #e0d9ed;
-    --suave: #aaa0c0;
-    --aura: rgba(172, 130, 255, .55);
-}
-
-html, body { min-height: 100%; }
+/* ==============================
+   BASE
+============================== */
 
 body.pagina-historia {
-    background-color: var(--fundo);
-    color: #fff;
-    font-family: 'Roboto Mono', monospace;
-    overflow-x: hidden;
-    overflow-y: auto;
-}
-
-.sr {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    overflow: hidden;
-    clip: rect(0 0 0 0);
-    white-space: nowrap;
-}
-
-/* ---------- CAMADAS DE FUNDO ---------- */
-
-.h-fundo {
-    position: fixed;
-    inset: 0;
-    z-index: 0;
-    background:
-        linear-gradient(rgba(5, 8, 23, .55), rgba(5, 8, 23, .8)),
-        radial-gradient(ellipse at 50% 35%, rgba(120, 85, 232, .28) 0, transparent 60%),
-        radial-gradient(ellipse at 15% 85%, rgba(56, 189, 248, .10) 0, transparent 50%),
-        url('../imagens/galaxia-historia.png') center / cover no-repeat,
-        var(--fundo);
-}
-
-.h-particulas {
-    position: fixed;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    z-index: 1;
-    pointer-events: none;
-}
-
-.h-vinheta {
-    position: fixed;
-    inset: 0;
-    z-index: 2;
-    pointer-events: none;
-    background:
-        repeating-linear-gradient(0deg, rgba(0, 0, 0, .10) 0 1px, transparent 1px 3px),
-        radial-gradient(ellipse at center, transparent 55%, rgba(2, 3, 12, .7) 100%);
-}
-
-/* ---------- BARRA SUPERIOR ---------- */
-
-.h-topo {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    z-index: 20;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 10px;
-    padding: 16px 18px;
-    pointer-events: none;
-}
-
-.h-topo-esq { display: flex; gap: 10px; flex-wrap: wrap; }
-
-.h-mini {
-    pointer-events: auto;
-    padding: 10px 14px;
-    color: #d5c9eb;
-    background: rgba(10, 10, 35, .6);
-    border: 1px solid var(--borda);
-    font-family: 'Roboto Mono', monospace;
-    font-size: 11px;
-    cursor: pointer;
-    transition: background-color .3s, border-color .3s, color .3s;
-}
-
-.h-mini:hover,
-.h-mini:focus-visible {
-    color: #fff;
-    background: rgba(145, 105, 220, .35);
-    border-color: var(--roxo-claro);
-    outline: none;
-}
-
-/* ---------- PALCO ---------- */
-
-.h-palco {
-    position: relative;
-    z-index: 5;
     min-height: 100vh;
     min-height: 100dvh;
     display: flex;
     flex-direction: column;
-    align-items: center;
-    padding: 74px 16px 22px;
+    background: #050817;
+    color: #fff;
+    font-family: 'Press Start 2P', monospace;
+    overflow-x: hidden;
 }
 
-/* ---------- CENA ---------- */
+/* ==============================
+   FUNDO (escurecido, para o desenho aparecer)
+============================== */
 
-.h-cena {
-    position: relative;
-    flex: 1;
-    width: 100%;
-    min-height: 160px;
-    display: grid;
-    place-items: center;
+.fundo {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    background:
+        linear-gradient(to top, rgba(5, 8, 23, .95) 0%, rgba(5, 8, 23, .35) 70%),
+        url('../imagens/intro-scene.png') center 92% / cover no-repeat;
+    filter: brightness(.55);
+    image-rendering: pixelated;
 }
 
-.h-cena::before {
-    content: "";
-    position: absolute;
-    width: min(70vw, 460px);
-    aspect-ratio: 1;
-    border-radius: 50%;
-    background: radial-gradient(circle, var(--aura) 0, transparent 65%);
-    opacity: .55;
-    transition: background 1s;
-    animation: hq-pulsarAura 4s ease-in-out infinite;
-}
-
-.h-ilu {
-    position: absolute;
-    display: grid;
-    place-items: center;
-    opacity: 0;
-    transform: scale(.92);
-    transition: opacity .8s, transform .8s;
+.estrelas {
+    position: fixed;
+    inset: 0;
+    z-index: 1;
     pointer-events: none;
 }
 
-.h-ilu.ativa { opacity: 1; transform: scale(1); }
-
-.h-ilu svg {
-    width: clamp(150px, 36vh, 320px);
-    height: auto;
-    overflow: visible;
-    image-rendering: pixelated;
-    filter: drop-shadow(0 0 14px var(--aura));
-}
-
-.g-flutua-lento,
-.g-cristal,
-.g-cristal-fraco {
-    transform-box: fill-box;
-    transform-origin: center;
-}
-
-.g-flutua-lento { animation: hq-flutuarSvg 4s ease-in-out infinite; }
-.g-cristal      { animation: hq-flutuarSvg 3.2s ease-in-out infinite, hq-brilhoCristal 3.2s ease-in-out infinite; }
-.g-cristal-fraco { animation: hq-tremer 2.4s steps(1) infinite, hq-apagar 2.4s steps(1) infinite; }
-.g-glitch       { animation: hq-glitch 3.6s steps(1) infinite; }
-.g-capa         { animation: hq-capa 1.6s steps(2) infinite; transform-box: fill-box; transform-origin: right center; }
-
-.g-giro, .g-giro-inv, .g-nucleo { transform-box: fill-box; transform-origin: center; }
-.g-giro     { animation: hq-giro 9s linear infinite; }
-.g-giro-inv { animation: hq-giro 6s linear infinite reverse; }
-.g-nucleo   { animation: hq-pulsarNucleo 2.4s ease-in-out infinite; }
-.g-brilha   { animation: hq-piscarSuave 1.8s ease-in-out infinite; }
-
-.fag  { animation: hq-cintilar 2.2s var(--d, 0s) steps(2) infinite; }
-.runa { animation: hq-subirRuna 3s var(--d, 0s) ease-in-out infinite; }
-.cai  { animation: hq-cair 2.4s var(--d, 0s) ease-in infinite; opacity: 0; }
-.erro { animation: hq-piscar 1.2s steps(1) infinite; }
-
-/* ---------- CARTÃO DE CAPÍTULO ---------- */
-
-.h-capitulo {
+.estrelas i {
     position: absolute;
-    inset: 0;
-    z-index: 3;
+    width: 3px;
+    height: 3px;
+    background: #fff;
+    opacity: .2;
+    animation: his-cintilar var(--t, 3s) var(--d, 0s) steps(4) infinite;
+}
+
+/* ==============================
+   BOTÃO PULAR
+============================== */
+
+.pular {
+    position: fixed;
+    top: 20px;
+    right: 24px;
+    z-index: 5;
+    color: #d0c5e8;
+    font-size: 10px;
+    letter-spacing: 1px;
+    text-decoration: none;
+    opacity: .8;
+    transition: color .2s, opacity .2s;
+}
+
+.pular:hover { color: #ffd36b; opacity: 1; }
+
+/* ==============================
+   A CENA (onde ficam os desenhos)
+   Obs.: a tela inicial também usa a classe .cena (position: fixed).
+   Por isso aqui o seletor é escopado com body.pagina-historia.
+============================== */
+
+body.pagina-historia .cena {
+    position: relative;
+    inset: auto;
+    z-index: 2;
+    flex: 1;
+    min-height: 200px;
+    padding: 70px 16px 10px;
     display: flex;
-    flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 14px;
-    padding: 20px;
-    text-align: center;
-    opacity: 0;
-    pointer-events: none;
-    background: radial-gradient(ellipse at center, rgba(5, 8, 23, .8) 0, rgba(5, 8, 23, .35) 60%, transparent 100%);
+    gap: 28px;
+    overflow: visible;
+    --e: 8px;            /* tamanho de cada pixel (o JS muda por capítulo) */
+    --aura: 172,130,255; /* cor do brilho (o JS muda por capítulo) */
 }
 
-.h-capitulo.mostrar { animation: hq-cartao 2.4s steps(1) forwards; }
-
-.h-cap-num {
-    color: var(--ouro-claro);
-    font-size: 12px;
-    letter-spacing: 4px;
-    text-shadow: 0 0 14px rgba(255, 185, 0, .6);
+/* brilho redondo atrás dos desenhos */
+body.pagina-historia .cena::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    margin: auto;
+    z-index: -1;
+    width: min(80vw, 480px);
+    height: min(80vw, 480px);
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(var(--aura), .5) 0, transparent 65%);
+    animation: his-aura 4s ease-in-out infinite;
 }
 
-.h-cap-linha {
-    width: 100px;
-    height: 2px;
-    background: linear-gradient(to right, transparent, var(--roxo-2), transparent);
+/* o tamanho do desenho = nº de pixels de largura x tamanho do pixel */
+.sprite {
+    width: calc(var(--c) * var(--e) * var(--k, 1));
+    height: auto;
+    image-rendering: pixelated;
+    filter: drop-shadow(0 0 14px rgba(var(--aura), .8));
+    animation: his-flutuar 3.4s ease-in-out infinite;
+    transition: filter .4s, opacity .4s, scale .4s;
 }
 
-.h-cap-titulo {
-    color: var(--roxo);
-    font-family: 'Press Start 2P', monospace;
-    font-size: clamp(16px, 4vw, 30px);
-    line-height: 1.6;
-    text-shadow: 4px 4px 0 var(--roxo-esc), 0 0 20px rgba(172, 130, 255, .6);
+.sprite:nth-child(2) { animation-delay: -.8s; }
+.sprite:nth-child(3) { animation-delay: -1.6s; }
+.sprite:nth-child(4) { animation-delay: -2.4s; }
+
+/* cristal rachado: pisca como se estivesse falhando */
+.sprite.cristalPartido {
+    animation: his-flutuar 3.4s ease-in-out infinite, his-falhar 2.4s steps(1) infinite;
 }
 
-.h-capitulo.mostrar .h-cap-num,
-.h-capitulo.mostrar .h-cap-titulo { animation: hq-pixelIn .9s both; }
+/* pedacinhos soltos, em alturas diferentes */
+.sprite.caco { animation-duration: 2.2s; }
+.cena .caco:nth-child(1) { margin-bottom: 90px; }
+.cena .caco:nth-child(2) { margin-top: 80px; }
+.cena .caco:nth-child(4) { margin-bottom: 50px; }
+.cena .caco:nth-child(5) { margin-top: 100px; }
 
-/* ---------- CAIXA DE DIÁLOGO ---------- */
+/* capítulo da escolha: o item escolhido cresce, o outro apaga */
+.sprite.escolhido {
+    scale: 1.25;
+    filter: drop-shadow(0 0 20px #ffd36b);
+}
 
-.h-dialogo {
+.sprite.apagado {
+    opacity: .3;
+    filter: grayscale(1);
+}
+
+/* entrada da cena (e o tremor quando o cristal quebra) */
+body.pagina-historia .cena.nova   { animation: his-entrar .5s steps(5) both; }
+body.pagina-historia .cena.tremer { animation: his-entrar .5s steps(5) both, his-tremer .6s .5s steps(8); }
+
+/* ==============================
+   CAIXA DE DIÁLOGO
+============================== */
+
+.dialogo {
     position: relative;
-    width: min(100%, 820px);
-    margin-top: 26px;
-    padding: 30px 26px 16px;
-    background: rgba(5, 8, 23, .9);
-    border: 2px solid var(--roxo);
-    box-shadow: 4px 4px 0 var(--roxo-esc), 0 0 30px rgba(172, 130, 255, .18);
-    cursor: pointer;
-    transition: opacity .5s;
+    z-index: 3;
+    width: min(740px, calc(100% - 32px));
+    margin: 0 auto 24px;
+    padding: 32px 28px 18px;
+
+    background: rgba(12, 14, 40, .94);
+    border: 4px solid #c4a5ff;
+    border-radius: 6px;
+    box-shadow:
+        inset 0 0 0 3px #12143a,
+        inset 0 0 0 5px #7d5cc9,
+        0 0 30px rgba(167, 123, 255, .35);
+
+    animation: his-subir .8s .3s ease both;
 }
 
-.h-dialogo.oculto { opacity: 0; pointer-events: none; }
-
-/* cantos dourados */
-.h-dialogo::before,
-.h-dialogo::after {
-    content: "";
+.nome {
     position: absolute;
-    width: 8px;
-    height: 8px;
-    background: var(--ouro);
-    box-shadow: 0 0 8px rgba(255, 185, 0, .7);
-}
-.h-dialogo::before { top: -5px; right: -5px; }
-.h-dialogo::after  { bottom: -5px; left: -5px; }
-
-.h-falante {
-    position: absolute;
-    top: -15px;
-    left: 18px;
-    padding: 8px 12px;
-    color: var(--ouro-claro);
-    background: var(--roxo-esc);
-    border: 2px solid var(--roxo);
-    font-family: 'Press Start 2P', monospace;
-    font-size: 9px;
-    letter-spacing: 1px;
-}
-
-.h-progresso { display: flex; gap: 6px; margin-bottom: 14px; }
-
-.h-progresso span {
-    width: 24px;
-    height: 6px;
-    background: #2a3170;
-    transition: background-color .4s, box-shadow .4s;
-}
-.h-progresso span.feito  { background: var(--roxo); }
-.h-progresso span.atual  { background: var(--ouro); box-shadow: 0 0 10px rgba(255, 185, 0, .7); }
-
-.h-fala {
-    min-height: 5.8em;
-    color: #fff;
-    font-size: clamp(14px, 2.2vw, 17px);
-    line-height: 1.9;
-}
-
-.h-fala .destaque {
-    color: var(--ouro-claro);
-    font-weight: 600;
-    text-shadow: 0 0 10px rgba(255, 185, 0, .45);
-}
-
-.h-fala.digitando::after {
-    content: "";
-    display: inline-block;
-    width: .6em;
-    height: 1em;
-    margin-left: 4px;
-    vertical-align: -2px;
-    background: var(--roxo-claro);
-    animation: hq-piscar 1s steps(1) infinite;
-}
-
-/* ---------- BOTÕES ---------- */
-
-.h-acoes {
-    display: flex;
-    justify-content: flex-end;
-    align-items: center;
-    gap: 14px;
-    min-height: 54px;
-    margin-top: 8px;
-}
-
-.h-dica {
-    margin-right: auto;
-    color: var(--suave);
+    top: -17px;
+    left: 24px;
+    padding: 9px 14px;
+    background: #a77bff;
+    color: #12143a;
     font-size: 10px;
-    letter-spacing: 1px;
+    border: 3px solid #12143a;
+    border-radius: 4px;
 }
 
-.h-btn {
-    display: none;
-    padding: 14px 18px;
-    color: #fff;
-    background: rgba(10, 10, 35, .65);
-    border: 2px solid var(--roxo);
-    font-family: 'Press Start 2P', monospace;
-    font-size: 10px;
-    cursor: pointer;
-    transition: background-color .3s, color .3s, box-shadow .3s, transform .3s;
+#titulo {
+    margin-bottom: 12px;
+    color: #ffd36b;
+    font-size: 14px;
+    font-weight: normal;
+    line-height: 1.5;
 }
 
-.h-btn b { display: inline-block; margin-left: 4px; animation: hq-piscar 1s steps(1) infinite; }
+.area-texto { position: relative; }
 
-.h-btn.mostrar { display: inline-block; animation: hq-pixelIn .5s both; }
-
-.h-btn:hover,
-.h-btn:focus-visible {
-    color: #080817;
-    background: var(--roxo-2);
-    box-shadow: 0 0 25px rgba(172, 130, 255, .7);
-    transform: scale(1.05);
-    outline: none;
-}
-
-.h-iniciar {
-    padding: 18px 24px;
-    background: #7855e8;
-    border-color: var(--ouro-claro);
+#texto {
+    min-height: 70px;
+    padding-right: 20px;
+    color: #f1ecff;
     font-size: 11px;
-    line-height: 1.6;
-    text-align: center;
+    line-height: 2.1;
 }
 
-.h-iniciar.mostrar { animation: hq-pixelIn .7s both, hq-pulsoBorda 2s .8s ease-in-out infinite; }
+/* ==============================
+   ESCOLHAS
+============================== */
 
-.h-iniciar:hover,
-.h-iniciar:focus-visible { background: var(--ouro-claro); border-color: #fff; }
+.escolhas {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 12px;
+}
 
-.h-dialogo.final .h-acoes { justify-content: center; }
-.h-dialogo.final .h-dica  { display: none; }
+.escolhas:empty { display: none; }
 
-.h-noscript { position: relative; z-index: 10; margin-top: 20px; text-align: center; color: var(--texto); }
-.h-noscript a { color: var(--roxo-claro); font-weight: 600; }
+.escolhas button {
+    flex: 1 1 220px;
+    padding: 12px 14px;
+    background: transparent;
+    color: #f1ecff;
+    font-family: inherit;
+    font-size: 10px;
+    line-height: 1.6;
+    border: 2px solid #7d5cc9;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background .2s, border-color .2s, transform .2s;
+}
 
-/* ---------- TRANSIÇÃO ---------- */
+.escolhas button:hover { border-color: #c4a5ff; transform: translateY(-2px); }
 
-.h-transicao {
+.escolhas button.escolhida {
+    background: #a77bff;
+    color: #12143a;
+    border-color: #c4a5ff;
+}
+
+/* ==============================
+   RODAPÉ: bolinhas + botões
+============================== */
+
+.rodape {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 14px;
+    margin-top: 16px;
+    padding-top: 14px;
+    border-top: 2px dashed rgba(196, 165, 255, .25);
+}
+
+.pontos { display: flex; gap: 8px; }
+
+.pontos span {
+    width: 10px;
+    height: 10px;
+    background: #2b2d5c;
+    border-radius: 50%;
+    transition: background .3s, transform .3s;
+}
+
+.pontos span.ativo { background: #ffd36b; transform: scale(1.3); }
+.pontos span.feito { background: #a77bff; }
+
+.botoes { display: flex; gap: 12px; }
+
+.botoes button {
+    padding: 12px 16px;
+    font-family: inherit;
+    font-size: 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background .2s, color .2s, transform .2s, opacity .2s;
+}
+
+.botao-voltar { background: transparent; color: #c4a5ff; border: 2px solid #7d5cc9; }
+.botao-avancar { background: #ffd36b; color: #12143a; border: 2px solid #ffd36b; }
+
+.botoes button:hover:not(:disabled) { transform: translateY(-2px); }
+.botao-avancar:hover:not(:disabled) { background: #fff; }
+.botoes button:disabled { opacity: .35; cursor: not-allowed; }
+
+/* foco visível para quem usa teclado */
+.botoes button:focus-visible,
+.escolhas button:focus-visible,
+.pular:focus-visible {
+    outline: 3px solid #ffb900;
+    outline-offset: 3px;
+}
+
+/* ==============================
+   SETINHA PISCANDO
+============================== */
+
+.seta {
+    position: absolute;
+    right: 0;
+    bottom: 4px;
+    color: #ffd36b;
+    font-size: 10px;
+    opacity: 0;
+}
+
+.seta.pisca { animation: his-piscar 1s steps(2) infinite; }
+
+/* ==============================
+   SAÍDA: escurece a tela ao começar
+============================== */
+
+body.pagina-historia::after {
+    content: "";
     position: fixed;
     inset: 0;
     z-index: 100;
@@ -2717,79 +2545,59 @@ body.pagina-historia {
     pointer-events: none;
 }
 
-.h-transicao.ligada { pointer-events: auto; animation: hq-escurecer .45s steps(6) forwards; }
+body.pagina-historia.saindo::after { animation: his-escurecer .45s steps(6) forwards; }
 
-/* ---------- ANIMAÇÕES ---------- */
+/* ==============================
+   ANIMAÇÕES
+============================== */
 
-@keyframes hq-piscar { 50% { opacity: 0; } }
-@keyframes hq-cintilar { 50% { opacity: .15; } }
-@keyframes hq-piscarSuave { 50% { opacity: .45; } }
-@keyframes hq-escurecer { to { opacity: 1; } }
-@keyframes hq-giro { to { transform: rotate(360deg); } }
+@keyframes his-flutuar   { 50% { transform: translateY(-8px); } }
+@keyframes his-aura      { 50% { transform: scale(1.12); opacity: .8; } }
+@keyframes his-cintilar  { 50% { opacity: 1; } }
+@keyframes his-piscar    { 50% { opacity: 0; } }
+@keyframes his-escurecer { to { opacity: 1; } }
+@keyframes his-entrar    { from { opacity: 0; } to { opacity: 1; } }
 
-@keyframes hq-pixelIn {
-    0%   { opacity: 0; }
-    25%  { opacity: 1; }
-    35%  { opacity: .2; }
-    55%  { opacity: 1; }
-    70%  { opacity: .5; }
-    100% { opacity: 1; }
+@keyframes his-subir {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: none; }
 }
 
-@keyframes hq-cartao {
-    0%   { opacity: 0; }
-    12%  { opacity: 1; }
-    80%  { opacity: 1; }
-    90%  { opacity: .4; }
-    100% { opacity: 0; }
+@keyframes his-falhar {
+    0%, 80%, 100% { opacity: 1; }
+    84% { opacity: .35; }
+    90% { opacity: .9; }
+    94% { opacity: .5; }
 }
 
-@keyframes hq-pulsarAura { 50% { transform: scale(1.12); opacity: .85; } }
-@keyframes hq-pulsarNucleo { 50% { transform: scale(1.18); opacity: .8; } }
-@keyframes hq-flutuarSvg { 50% { transform: translateY(-2.5px); } }
-@keyframes hq-brilhoCristal { 50% { filter: brightness(1.25); } }
-@keyframes hq-subirRuna { 0%, 100% { transform: translateY(2px); opacity: .5; } 50% { transform: translateY(-3px); opacity: 1; } }
-@keyframes hq-cair { 0% { transform: translateY(0); opacity: 0; } 15% { opacity: 1; } 100% { transform: translateY(10px); opacity: 0; } }
-@keyframes hq-tremer { 0%, 90% { transform: translateX(0); } 92% { transform: translateX(-1px); } 96% { transform: translateX(1px); } }
-@keyframes hq-apagar { 0%, 85%, 100% { opacity: 1; } 88% { opacity: .35; } 92% { opacity: .9; } 95% { opacity: .5; } }
-@keyframes hq-glitch { 0%, 92%, 100% { transform: translate(0, 0); } 93% { transform: translate(-2px, 0); } 95% { transform: translate(2px, 1px); } 97% { transform: translate(-1px, -1px); } }
-@keyframes hq-capa { 50% { transform: scaleX(.7); } }
-
-@keyframes hq-pulsoBorda {
-    0%, 100% { box-shadow: 0 0 0 rgba(255, 211, 107, 0); }
-    50%      { box-shadow: 0 0 26px rgba(255, 211, 107, .6); }
+@keyframes his-tremer {
+    0%, 100% { transform: translate(0, 0); }
+    20% { transform: translate(-8px, 3px); }
+    40% { transform: translate(7px, -4px); }
+    60% { transform: translate(-5px, -2px); }
+    80% { transform: translate(4px, 3px); }
 }
 
-/* ---------- RESPONSIVO ---------- */
+/* ==============================
+   CELULAR
+============================== */
 
 @media (max-width: 600px) {
-    .h-topo { padding: 10px; }
-    .h-mini { padding: 8px 10px; font-size: 10px; }
-    .h-palco { padding: 64px 12px 14px; }
-    .h-dialogo { padding: 28px 16px 12px; }
-    .h-fala { min-height: 7.6em; }
-    .h-dica { display: none; }
-    .h-acoes { justify-content: center; }
-    .h-btn { width: 100%; text-align: center; }
-    .h-cap-num { font-size: 10px; letter-spacing: 3px; }
-}
+    body.pagina-historia .cena { --k: .6; gap: 14px; padding-top: 60px; }
 
-@media (max-height: 560px) and (orientation: landscape) {
-    .h-palco { padding-top: 56px; }
-    .h-ilu svg { width: clamp(100px, 30vh, 180px); }
-    .h-fala { min-height: 4em; font-size: 13px; }
-    .h-dialogo { margin-top: 10px; }
+    .dialogo { margin-bottom: 16px; padding: 30px 18px 18px; }
+
+    #titulo { font-size: 12px; }
+    #texto  { font-size: 10px; min-height: 100px; }
+
+    .rodape { justify-content: center; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-    .h-cena::before,
-    .h-ilu svg *,
-    .h-btn b { animation: none !important; }
-
-    .h-capitulo.mostrar { animation: none; opacity: 1; }
-    .h-capitulo.mostrar .h-cap-num,
-    .h-capitulo.mostrar .h-cap-titulo,
-    .h-btn.mostrar,
-    .h-iniciar.mostrar { animation: none; }
-    .cai { opacity: 0; }
+    .pagina-historia *,
+    .pagina-historia *::before,
+    .pagina-historia *::after {
+        animation: none !important;
+        transition: none !important;
+    }
 }
