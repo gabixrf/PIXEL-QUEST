@@ -1,0 +1,316 @@
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Roboto+Mono:wght@400;500;600&display=swap');
+
+/* =================================
+   PIXEL QUEST - LOGIN E CADASTRO
+   (cartão dividido com painel deslizante)
+================================= */
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body.tela-auth {
+    min-height: 100vh;
+    display: grid;
+    place-items: center;
+    padding: 24px;
+    color: #fff;
+    font-family: 'Roboto Mono', monospace;
+
+    background-color: #050817;
+    background-image:
+        linear-gradient(rgba(5, 8, 23, .65), rgba(5, 8, 23, .86)),
+        url('../imagens/galaxia-historia.png');
+    background-size: cover;
+    background-position: center;
+}
+
+a { text-decoration: none; }
+
+/* Cartão */
+
+.auth-caixa {
+    position: relative;
+    width: min(920px, 100%);
+    height: 670px;
+    overflow: hidden;
+
+    background: #10172b;
+    border: 1px solid #343b63;
+    border-radius: 26px;
+    box-shadow: 0 0 55px rgba(112, 75, 255, .24);
+}
+
+/* Formulários (ficam na metade direita; no cadastro vão para a esquerda) */
+
+.form-box {
+    position: absolute;
+    top: 0;
+    right: 0;
+    z-index: 1;
+    width: 50%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    padding: 30px 44px;
+    overflow-y: auto;
+
+    transition: right .6s ease-in-out .6s, visibility 0s .6s;
+}
+
+.form-box form { width: 100%; text-align: center; }
+
+.form-box.cadastro { visibility: hidden; }
+
+.auth-caixa.ativo .form-box { right: 50%; }
+.auth-caixa.ativo .form-box.cadastro { visibility: visible; }
+.auth-caixa.ativo .form-box.login { visibility: hidden; }
+
+.form-box .subtitulo {
+    color: #a78bfa;
+    font-size: 10px;
+    letter-spacing: 2px;
+    margin-bottom: 12px;
+}
+
+.form-box h1 {
+    color: #fff;
+    font-family: 'Press Start 2P', monospace;
+    font-size: 20px;
+    line-height: 1.6;
+    margin-bottom: 22px;
+    text-shadow: 0 0 16px rgba(172, 130, 255, .45);
+}
+
+/* Campos com ícone */
+
+.campo {
+    position: relative;
+    margin-bottom: 14px;
+    text-align: left;
+}
+
+.campo label {
+    display: block;
+    margin-bottom: 6px;
+    color: #d8dcef;
+    font-size: 12px;
+}
+
+.campo input {
+    width: 100%;
+    padding: 12px 42px 12px 14px;
+    background: #080e20;
+    border: 1px solid #343b63;
+    border-radius: 8px;
+    color: #fff;
+    font-family: inherit;
+    font-size: 13px;
+    outline: none;
+    transition: .3s;
+}
+
+.campo input::placeholder { color: #6c738a; }
+
+.campo input:focus {
+    border-color: #a78bfa;
+    box-shadow: 0 0 10px rgba(167, 139, 250, .3);
+}
+
+.campo input:user-invalid { border-color: #ff8fa3; }
+
+.campo .icone {
+    position: absolute;
+    right: 14px;
+    bottom: 12px;
+    width: 17px;
+    height: 17px;
+    fill: none;
+    stroke: #a78bfa;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    pointer-events: none;
+}
+
+.auth-botao {
+    width: 100%;
+    margin-top: 6px;
+    padding: 15px;
+    border: 0;
+    border-radius: 10px;
+    background: linear-gradient(90deg, #7855e8, #a78bfa);
+    color: #fff;
+    font-family: 'Press Start 2P', monospace;
+    font-size: 10px;
+    cursor: pointer;
+    box-shadow: 0 0 18px rgba(120, 85, 232, .35);
+    transition: .3s;
+}
+
+.auth-botao:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 0 26px rgba(150, 120, 255, .55);
+}
+
+.auth-erro {
+    margin-bottom: 14px;
+    padding: 10px 12px;
+    border: 1px solid #8a3a47;
+    border-radius: 8px;
+    background: rgba(255, 155, 169, .08);
+    color: #ff9ba9;
+    font-size: 12px;
+    line-height: 1.5;
+    text-align: left;
+}
+
+.voltar {
+    display: inline-block;
+    margin-top: 16px;
+    color: #aaa0c0;
+    font-size: 11px;
+    transition: .3s;
+}
+.voltar:hover { color: #a78bfa; text-decoration: underline; }
+
+/* Painel colorido com a curva grande */
+
+.toggle-box {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+}
+
+.toggle-box::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -250%;
+    z-index: 2;
+    width: 300%;
+    height: 100%;
+    border-radius: 150px;
+    background: linear-gradient(135deg, #3a1f9e 0%, #7855e8 52%, #a78bfa 100%);
+    transition: left 1.2s ease-in-out;
+}
+
+.auth-caixa.ativo .toggle-box::before { left: 50%; }
+
+.toggle-painel {
+    position: absolute;
+    z-index: 2;
+    width: 50%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 14px;
+    padding: 30px;
+    text-align: center;
+    pointer-events: auto;
+    transition: left .6s ease-in-out, right .6s ease-in-out;
+}
+
+/* brilhos de estrela que acompanham o painel */
+.toggle-painel::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: .75;
+    background:
+        radial-gradient(circle at 18% 20%, #fff 0 1.5px, transparent 2.5px),
+        radial-gradient(circle at 78% 14%, #fff 0 1px, transparent 2px),
+        radial-gradient(circle at 88% 62%, #fff 0 1.5px, transparent 2.5px),
+        radial-gradient(circle at 12% 74%, #fff 0 1px, transparent 2px),
+        radial-gradient(circle at 60% 88%, #fff 0 1.5px, transparent 2.5px);
+    animation: cintilar 3.4s ease-in-out infinite;
+}
+
+@keyframes cintilar { 0%, 100% { opacity: .35; } 50% { opacity: .95; } }
+
+.toggle-painel.esquerda { left: 0; transition-delay: .6s; }
+.auth-caixa.ativo .toggle-painel.esquerda { left: -50%; transition-delay: 0s; }
+
+.toggle-painel.direita { right: -50%; transition-delay: 0s; }
+.auth-caixa.ativo .toggle-painel.direita { right: 0; transition-delay: .6s; }
+
+.toggle-painel .simbolo {
+    font-size: 34px;
+    color: #fff;
+    text-shadow: 0 0 18px rgba(255, 255, 255, .8);
+}
+
+.toggle-painel h2 {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 16px;
+    line-height: 1.7;
+    text-shadow: 0 0 14px rgba(0, 0, 0, .35);
+}
+
+.toggle-painel p { font-size: 13px; color: #f1ecff; }
+
+.toggle-btn {
+    margin-top: 8px;
+    padding: 13px 26px;
+    border: 2px solid #fff;
+    border-radius: 10px;
+    color: #fff;
+    font-family: 'Press Start 2P', monospace;
+    font-size: 10px;
+    transition: .3s;
+}
+
+.toggle-btn:hover { background: #fff; color: #3a1f9e; box-shadow: 0 0 22px rgba(255, 255, 255, .5); }
+
+a:focus-visible, button:focus-visible { outline: 3px solid #ffb900; outline-offset: 3px; }
+
+/* Celular: painel em cima, formulário embaixo (sem deslizar) */
+
+@media (max-width: 760px) {
+
+    body.tela-auth { padding: 14px; }
+
+    .auth-caixa { height: auto; display: flex; flex-direction: column; border-radius: 20px; }
+
+    .toggle-box {
+        position: static;
+        order: -1;
+        pointer-events: auto;
+        background: linear-gradient(135deg, #3a1f9e, #7855e8 55%, #a78bfa);
+        border-radius: 0 0 34px 34px;
+    }
+    .toggle-box::before { display: none; }
+
+    .toggle-painel,
+    .toggle-painel.esquerda, .toggle-painel.direita,
+    .auth-caixa.ativo .toggle-painel.esquerda, .auth-caixa.ativo .toggle-painel.direita {
+        position: relative;
+        left: auto;
+        right: auto;
+        width: 100%;
+        height: auto;
+        padding: 22px 20px 28px;
+        transition: none;
+    }
+
+    .toggle-painel.direita, .auth-caixa.ativo .toggle-painel.esquerda { display: none; }
+    .auth-caixa.ativo .toggle-painel.direita { display: flex; }
+
+    .form-box,
+    .auth-caixa.ativo .form-box {
+        position: static;
+        width: 100%;
+        height: auto;
+        padding: 26px 22px 30px;
+        transition: none;
+    }
+
+    .form-box.cadastro, .auth-caixa.ativo .form-box.login { display: none; }
+    .auth-caixa.ativo .form-box.cadastro { display: flex; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .form-box, .toggle-box::before, .toggle-painel { transition: none !important; }
+    .toggle-painel::after { animation: none; }
+}

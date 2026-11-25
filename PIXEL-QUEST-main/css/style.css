@@ -1,0 +1,2795 @@
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Roboto+Mono:wght@400;500;600&display=swap');
+
+/* ==============================
+   CONFIGURAÇÕES GERAIS
+============================== */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background-color: #050817;
+    color: #ffffff;
+    font-family: 'Roboto Mono', monospace;
+
+    overflow-x: hidden;
+    overflow-y: auto;
+}
+
+a {
+    text-decoration: none;
+}
+
+
+/* ==============================
+   TELA INICIAL  (substitui a seção antiga "TELA INICIAL" do style.css:
+   apague tudo de .tela-inicial até .indicacao e cole este bloco no lugar)
+============================== */
+
+body.carregando { overflow: hidden; }
+
+/* ---------- CENA (fundo animado) ---------- */
+
+.cena {
+    position: fixed;
+    inset: 0;
+    overflow: hidden;
+    z-index: 0;
+}
+
+/* quadrado que imita o "background-size: cover" da imagem 1:1 */
+.quadro {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: max(100vw, 100vh);
+    aspect-ratio: 1;
+    transform: translate(calc(-50% + var(--px, 0px)), calc(-50% + var(--py, 0px))) scale(1.05);
+}
+
+.quadro > * { position: absolute; }
+
+.cena-img,
+.personagem,
+#estrelas {
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    image-rendering: pixelated;
+}
+
+/* personagem: cópia da imagem recortada por máscara, "respira" sobre o original */
+.personagem {
+    -webkit-mask-image: radial-gradient(ellipse 13% 17% at 26% 68%, #000 75%, transparent 100%);
+            mask-image: radial-gradient(ellipse 13% 17% at 26% 68%, #000 75%, transparent 100%);
+    transform-origin: 26% 81%;
+    animation: respirar 3.4s ease-in-out infinite;
+}
+
+/* brilho pulsando no notebook */
+.brilho {
+    left: 32.2%;
+    top: 64.6%;
+    width: 12%;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    background: radial-gradient(circle,
+        rgba(255, 214, 120, .85) 0,
+        rgba(255, 170, 50, .35) 30%,
+        transparent 68%);
+    mix-blend-mode: screen;
+    pointer-events: none;
+    transform: translate(-50%, -50%);
+    animation: pulsar 2.6s ease-in-out infinite;
+}
+
+/* faíscas subindo do notebook */
+.fagulha {
+    left: 32.5%;
+    top: 64%;
+    width: max(3px, .4%);
+    aspect-ratio: 1;
+    background: #ffd36b;
+    box-shadow: 0 0 6px #ffb900;
+    opacity: 0;
+    animation: subir 3.2s var(--d) ease-out infinite;
+}
+
+/* luzes da vila (posições aproximadas na ilha) */
+.luz {
+    width: max(3px, .45%);
+    aspect-ratio: 1;
+    background: #ffb347;
+    box-shadow: 0 0 8px 2px rgba(255, 170, 60, .7);
+    transform: translate(-50%, -50%);
+    animation: luz var(--t, 3s) var(--d, 0s) steps(1) infinite;
+    pointer-events: none;
+}
+
+/* vinheta + linhas de CRT para dar leitura ao texto */
+.vinheta {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background:
+        repeating-linear-gradient(0deg, rgba(0, 0, 0, .10) 0 1px, transparent 1px 3px),
+        radial-gradient(ellipse at 50% 45%, rgba(3, 5, 20, .5) 0, rgba(3, 5, 20, .15) 45%, transparent 70%),
+        radial-gradient(ellipse at center, transparent 55%, rgba(2, 3, 12, .65) 100%);
+}
+
+/* retrato (celular): mantém o personagem à vista */
+@media (max-aspect-ratio: 4/5) {
+    .quadro { left: calc(30vw + 24vh); }
+}
+
+/* ---------- LOADING / PRESS START ---------- */
+
+.loader {
+    position: fixed;
+    inset: 0;
+    z-index: 50;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    background: radial-gradient(ellipse at 50% 40%, #0d1235 0, #03050f 70%);
+}
+
+.loader-estrelas i {
+    position: absolute;
+    width: 3px;
+    height: 3px;
+    background: #fff;
+    opacity: .2;
+    animation: cintilar var(--t, 2.4s) var(--d, 0s) steps(4) infinite;
+}
+
+.loader-caixa {
+    position: relative;
+    width: min(92%, 520px);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 18px;
+    padding: 20px;
+    text-align: center;
+}
+
+.loader-logo {
+    font-family: 'Press Start 2P', monospace;
+    font-size: clamp(22px, 6vw, 34px);
+    line-height: 1.5;
+    animation: pixelIn 1s both;
+}
+
+.loader-logo span { display: block; }
+.loader-logo .l1 { color: #fff; text-shadow: 3px 3px 0 #3b2a85, 0 0 18px rgba(255, 255, 255, .3); }
+.loader-logo .l2 { color: #b58aff; text-shadow: 3px 3px 0 #3b2a85, 0 0 22px rgba(172, 130, 255, .6); }
+
+/* trilha: o herói caminha até a estrela enquanto carrega */
+.loader-trilha {
+    position: relative;
+    width: 100%;
+    padding-top: 46px;
+    margin-top: 6px;
+    --p: 0%;
+}
+
+.heroi {
+    position: absolute;
+    left: var(--p);
+    top: 6px;
+    width: 30px;
+    height: 36px;
+    transform: translateX(-50%);
+    filter: drop-shadow(0 0 6px rgba(255, 200, 90, .5));
+    animation: bob .36s steps(1) infinite;
+}
+
+.heroi .pb { opacity: 0; }
+.heroi .pa { animation: passoA .36s steps(1) infinite; }
+.heroi .pb { animation: passoB .36s steps(1) infinite; }
+.heroi.chegou, .heroi.chegou .pa, .heroi.chegou .pb { animation: none; }
+.heroi.chegou .pa { opacity: 1; }
+
+.meta {
+    position: absolute;
+    right: 0;
+    top: 12px;
+    color: #ffd36b;
+    font-size: 22px;
+    text-shadow: 0 0 14px rgba(255, 185, 0, .8);
+    animation: pulsar-estrela 1.6s ease-in-out infinite;
+}
+
+.barra {
+    height: 22px;
+    padding: 3px;
+    border: 2px solid #3b2a85;
+    background: #0a0f2c;
+}
+
+.barra b {
+    display: block;
+    height: 100%;
+    width: var(--p);
+    background: repeating-linear-gradient(90deg, #b58aff 0 10px, #7855e8 10px 13px);
+    box-shadow: 0 0 12px rgba(172, 130, 255, .6);
+}
+
+.pct {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 11px;
+    color: #c4a5ff;
+}
+
+/* mini terminal com as mensagens de carregamento */
+.terminal {
+    width: 100%;
+    min-height: 106px;
+    padding: 12px 14px;
+    text-align: left;
+    font-size: 11px;
+    line-height: 1.9;
+    color: #aaa0c0;
+    border: 1px solid #2a3170;
+    background: rgba(5, 8, 23, .7);
+}
+
+.terminal p { animation: pixelIn .4s both; }
+.terminal span { color: #c4a5ff; }
+.terminal b { color: #4ade80; font-weight: 600; }
+
+.dica {
+    min-height: 2.6em;
+    color: #8f86a8;
+    font-size: 10px;
+    letter-spacing: 1px;
+    line-height: 1.6;
+}
+
+.slot-start { min-height: 56px; }
+
+.press-start {
+    padding: 16px 22px;
+    background: transparent;
+    border: 2px solid #b58aff;
+    color: #fff;
+    font-family: 'Press Start 2P', monospace;
+    font-size: 12px;
+    cursor: pointer;
+    animation: piscar 1s steps(1) infinite;
+}
+
+.press-start:hover { background: #a77bff; color: #080817; }
+
+/* saída: dissolve em quadradinhos revelando a cena */
+.loader.saindo { pointer-events: none; background: transparent; }
+
+.loader.saindo .loader-caixa,
+.loader.saindo .loader-estrelas {
+    opacity: 0;
+    transition: opacity .2s steps(2);
+}
+
+.pixels-saida {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    grid-template-columns: repeat(16, 1fr);
+    grid-template-rows: repeat(9, 1fr);
+}
+
+.pixels-saida i {
+    background: #03050f;
+    animation: sumirCelula .35s var(--d) steps(3) forwards;
+}
+
+/* ---------- BOTÃO DE SOM ---------- */
+
+.botao-som {
+    position: fixed;
+    top: 18px;
+    right: 18px;
+    z-index: 20;
+    padding: 10px 14px;
+    color: #d5c9eb;
+    background: rgba(10, 10, 35, .6);
+    border: 1px solid #8c70bb;
+    font-family: 'Roboto Mono', monospace;
+    font-size: 11px;
+    cursor: pointer;
+    opacity: 0;
+    transition: background-color .3s, border-color .3s, color .3s;
+}
+
+.entrou .botao-som { animation: pixelIn .6s 2s both; }
+
+.botao-som:hover {
+    color: #fff;
+    background: rgba(145, 105, 220, .35);
+    border-color: #c4a5ff;
+}
+
+/* ---------- CONTEÚDO ---------- */
+
+.tela-inicial {
+    position: relative;
+    z-index: 5;
+    width: 100%;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.conteudo-inicial {
+    width: 90%;
+    max-width: 850px;
+    padding: 30px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+.tela-inicial .simbolo-topo,
+.tela-inicial .linha-decorativa,
+.tela-inicial .subtitulo,
+.tela-inicial .pixel,
+.tela-inicial .quest,
+.tela-inicial .botao-start,
+.tela-inicial .indicacao { opacity: 0; }
+
+.tela-inicial .simbolo-topo {
+    color: #c4a5ff;
+    font-size: 35px;
+    margin-bottom: 15px;
+    text-shadow: 0 0 18px rgba(172, 130, 255, .8);
+}
+
+.tela-inicial .linha-decorativa {
+    width: 100px;
+    height: 2px;
+    margin: 15px auto 25px;
+    background: linear-gradient(to right, transparent, #a77bff, transparent);
+}
+
+.tela-inicial .subtitulo {
+    color: #d0c5e8;
+    font-size: 12px;
+    letter-spacing: 3px;
+    margin-bottom: 25px;
+}
+
+.titulo-principal {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    font-family: 'Press Start 2P', monospace;
+    font-size: clamp(30px, 6vw, 55px);
+    line-height: 1.4;
+}
+
+.pixel { color: #fff; text-shadow: 4px 4px 0 #3b2a85, 0 0 15px rgba(255, 255, 255, .3); }
+.quest { color: #b58aff; text-shadow: 4px 4px 0 #3b2a85, 0 0 20px rgba(172, 130, 255, .6); }
+
+.frase {
+    min-height: 1.8em;
+    margin: 25px 0 35px;
+    color: #e0d9ed;
+    font-size: 15px;
+}
+
+/* cursor de digitação */
+.frase.digitando::after {
+    content: "";
+    display: inline-block;
+    width: .6em;
+    height: 1em;
+    margin-left: 4px;
+    vertical-align: -2px;
+    background: #c4a5ff;
+    animation: piscar 1s steps(1) infinite;
+}
+
+.botao-start {
+    padding: 18px 30px;
+    color: #fff;
+    font-family: 'Press Start 2P', monospace;
+    font-size: 12px;
+    border: 2px solid #b58aff;
+    background: rgba(10, 10, 35, .65);
+    transition: background-color .3s, color .3s, box-shadow .3s, transform .3s;
+}
+
+.botao-start:not(.mostrar) { pointer-events: none; }
+
+.botao-start:hover,
+.botao-start:focus-visible {
+    background: #a77bff;
+    color: #080817;
+    box-shadow: 0 0 25px rgba(172, 130, 255, .7);
+    transform: scale(1.05);
+    outline: none;
+}
+
+.indicacao {
+    margin-top: 45px;
+    color: #aaa0c0;
+    font-size: 10px;
+    letter-spacing: 2px;
+}
+
+/* ---------- ENTRADA ORQUESTRADA (após o Press Start) ---------- */
+
+.entrou .simbolo-topo     { animation: pixelIn .6s .2s both; }
+.entrou .linha-decorativa { animation: tracar .6s .5s steps(6) both; }
+.entrou .subtitulo        { animation: pixelIn .8s .9s both; }
+.entrou .pixel            { animation: pixelIn .9s 1.3s both; }
+.entrou .quest            { animation: pixelIn .9s 1.7s both; }
+.entrou .titulo-principal { animation: flutuar 4s 2.8s ease-in-out infinite; }
+
+.botao-start.mostrar {
+    animation: pixelIn .7s both, pulsoBorda 2.2s .8s ease-in-out infinite;
+}
+
+.indicacao.mostrar { animation: pixelIn .8s .3s both; }
+
+/* transição ao clicar em START */
+body.pagina-intro::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    background: #03050f;
+    opacity: 0;
+    pointer-events: none;
+}
+
+body.pagina-intro.saindo-pagina::after { animation: escurecer .45s steps(6) forwards; }
+
+/* ---------- ANIMAÇÕES ---------- */
+
+@keyframes respirar {
+    0%, 100% { transform: scale(1, 1); }
+    50%      { transform: scale(1.004, 1.014); }
+}
+
+@keyframes pulsar {
+    0%, 100% { opacity: .45; transform: translate(-50%, -50%) scale(.85); }
+    50%      { opacity: 1;   transform: translate(-50%, -50%) scale(1.15); }
+}
+
+@keyframes subir {
+    0%   { opacity: 0; transform: translate(0, 0); }
+    15%  { opacity: 1; }
+    100% { opacity: 0; transform: translate(var(--dx), -70px); }
+}
+
+@keyframes piscar { 50% { opacity: 0; } }
+@keyframes cintilar { 50% { opacity: 1; } }
+@keyframes flutuar { 50% { transform: translateY(-5px); } }
+@keyframes luz { 0%, 100% { opacity: 1; } 40% { opacity: .35; } 70% { opacity: .8; } }
+@keyframes passoA { 50% { opacity: 0; } }
+@keyframes passoB { 50% { opacity: 1; } }
+@keyframes bob { 50% { transform: translateX(-50%) translateY(-2px); } }
+@keyframes pulsar-estrela { 50% { transform: scale(1.25); opacity: .7; } }
+@keyframes sumirCelula { to { opacity: 0; } }
+
+@keyframes pixelIn {
+    0%   { opacity: 0; }
+    25%  { opacity: 1; }
+    35%  { opacity: .2; }
+    55%  { opacity: 1; }
+    70%  { opacity: .5; }
+    100% { opacity: 1; }
+}
+
+@keyframes tracar   { from { opacity: 1; transform: scaleX(0); } to { opacity: 1; transform: scaleX(1); } }
+@keyframes saida    { to { opacity: 0; } }
+@keyframes escurecer { to { opacity: 1; } }
+
+@keyframes pulsoBorda {
+    0%, 100% { box-shadow: 0 0 0 rgba(172, 130, 255, 0); }
+    50%      { box-shadow: 0 0 22px rgba(172, 130, 255, .55); }
+}
+
+/* ---------- ACESSIBILIDADE / TELAS PEQUENAS ---------- */
+
+@media (max-width: 600px) {
+    .botao-som { top: 10px; right: 10px; font-size: 10px; padding: 8px 10px; }
+    .tela-inicial .subtitulo { font-size: 10px; letter-spacing: 2px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .pagina-intro *, .pagina-intro *::before, .pagina-intro *::after { animation: none !important; transition: none !important; }
+
+    .tela-inicial .simbolo-topo, .tela-inicial .linha-decorativa, .tela-inicial .subtitulo,
+    .tela-inicial .pixel, .tela-inicial .quest, .tela-inicial .botao-start,
+    .tela-inicial .indicacao, .botao-som { opacity: 1; }
+
+    .fagulha { display: none; }
+}
+
+/* ==============================
+   TELA DA HISTÓRIA
+============================== */
+
+.tela-historia {
+    width: 100%;
+    height: 100vh;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    position: relative;
+
+    background-image:
+        linear-gradient(
+            rgba(5, 8, 23, 0.55),
+            rgba(5, 8, 23, 0.65)
+        ),
+        url('../imagens/teste-intro-estavel.gif');
+
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+.conteudo-historia {
+    width: 85%;
+    max-width: 850px;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+.pular-historia {
+    position: absolute;
+    top: 35px;
+    right: 45px;
+
+    padding: 12px 18px;
+
+    color: #d5c9eb;
+    background: rgba(10, 10, 35, 0.6);
+
+    border: 1px solid #8c70bb;
+
+    font-family: 'Roboto Mono', monospace;
+    font-size: 11px;
+
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.pular-historia:hover {
+    color: #ffffff;
+    background-color: rgba(145, 105, 220, 0.35);
+    border-color: #c4a5ff;
+}
+
+.identificacao {
+    color: #c4a5ff;
+    font-size: 12px;
+    letter-spacing: 3px;
+    margin-bottom: 5px;
+}
+
+.titulo-historia {
+    color: #ffffff;
+    font-family: 'Press Start 2P', monospace;
+    font-size: clamp(17px, 3vw, 25px);
+    text-align: center;
+    line-height: 1.8;
+    margin-bottom: 15px;
+
+    text-shadow: 0 0 15px rgba(172, 130, 255, 0.5);
+}
+
+.subtitulo-historia {
+    color: #c8bfd8;
+    font-size: 14px;
+    text-align: center;
+    margin-bottom: 25px;
+}
+
+#textoHistoria {
+    min-height: 100px;
+    max-width: 750px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    color: #ffffff;
+    font-family: 'Roboto Mono', monospace;
+    font-size: 18px;
+    line-height: 1.8;
+
+    opacity: 0;
+    transition: opacity 0.7s ease;
+}
+
+#textoHistoria.visivel {
+    opacity: 1;
+}
+
+.indicador {
+    display: flex;
+    gap: 8px;
+    margin-top: 25px;
+}
+
+.indicador span {
+    width: 7px;
+    height: 7px;
+
+    border-radius: 50%;
+    background-color: #a77bff;
+
+    box-shadow: 0 0 10px rgba(172, 130, 255, 0.7);
+}
+
+.botao-iniciar {
+    display: none;
+
+    color: #ffffff;
+    font-family: 'Press Start 2P', monospace;
+    font-size: 11px;
+
+    padding: 18px 25px;
+    margin-top: 30px;
+
+    border: 2px solid #a77bff;
+    background-color: rgba(10, 10, 35, 0.7);
+
+    transition: 0.3s;
+}
+
+.botao-iniciar.mostrar {
+    display: inline-block;
+}
+
+.botao-iniciar:hover {
+    color: #080817;
+    background-color: #a77bff;
+
+    box-shadow: 0 0 25px rgba(172, 130, 255, 0.7);
+}
+
+
+/* ==============================
+   CADASTRO DE USUÁRIO
+============================== */
+
+.tela-cadastro {
+    width: 100%;
+    min-height: 100vh;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    padding: 30px 20px;
+
+    background-image:
+        linear-gradient(
+            rgba(5, 8, 23, 0.65),
+            rgba(5, 8, 23, 0.85)
+        ),
+        url('../imagens/galaxia-historia.png');
+
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+.formulario-cadastro {
+    width: 90%;
+    max-width: 400px;
+
+    padding: 24px 30px;
+    margin: auto 0;
+
+    background-color: rgba(5, 8, 23, 0.92);
+
+    border: 1px solid #8c70bb;
+
+    box-shadow: 0 0 25px rgba(172, 130, 255, 0.15);
+
+    text-align: center;
+}
+
+.formulario-cadastro .simbolo-topo {
+    color: #c4a5ff;
+    font-size: 30px;
+    margin-bottom: 8px;
+
+    text-shadow: 0 0 18px rgba(172, 130, 255, 0.8);
+}
+
+.formulario-cadastro .subtitulo {
+    color: #c4a5ff;
+    font-size: 10px;
+    letter-spacing: 2px;
+    margin-bottom: 12px;
+}
+
+.formulario-cadastro h1 {
+    color: #ffffff;
+    font-family: 'Press Start 2P', monospace;
+    font-size: 17px;
+    line-height: 1.6;
+    margin-bottom: 10px;
+}
+
+.formulario-cadastro .descricao {
+    color: #c8bfd8;
+    font-size: 11px;
+    margin-bottom: 18px;
+}
+
+.formulario-cadastro form {
+    display: flex;
+    flex-direction: column;
+    gap: 11px;
+    text-align: left;
+}
+
+.formulario-cadastro .campo {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.formulario-cadastro .campo label {
+    color: #c4a5ff;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.formulario-cadastro .campo input {
+    width: 100%;
+    padding: 9px 12px;
+
+    background-color: #0d1428;
+    border: 1px solid #39405d;
+
+    color: #ffffff;
+    font-family: 'Roboto Mono', monospace;
+    font-size: 12px;
+
+    outline: none;
+    transition: 0.3s;
+}
+
+.formulario-cadastro .campo input:focus {
+    border-color: #b58aff;
+    box-shadow: 0 0 10px rgba(172, 130, 255, 0.25);
+}
+
+.formulario-cadastro .campo input::placeholder {
+    color: #77738c;
+}
+
+.botao-cadastro {
+    width: 100%;
+    padding: 14px;
+    margin-top: 5px;
+
+    background-color: rgba(10, 10, 35, 0.8);
+    border: 2px solid #b58aff;
+
+    color: #ffffff;
+    font-family: 'Press Start 2P', monospace;
+    font-size: 9px;
+
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.botao-cadastro:hover {
+    background-color: #a77bff;
+    color: #080817;
+
+    box-shadow: 0 0 25px rgba(172, 130, 255, 0.7);
+    transform: scale(1.02);
+}
+
+.link-login {
+    color: #aaa0c0;
+    font-size: 11px;
+    margin-top: 18px;
+}
+
+.link-login a {
+    color: #c4a5ff;
+    font-weight: bold;
+}
+
+.link-login a:hover {
+    text-decoration: underline;
+}
+
+.voltar {
+    display: inline-block;
+    margin-top: 12px;
+
+    color: #aaa0c0;
+    font-size: 10px;
+    transition: 0.3s;
+}
+
+.voltar:hover {
+    color: #c4a5ff;
+}
+
+
+
+
+
+
+/* TELA DE LOGIN */
+
+.tela-cadastro {
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 40px 20px;
+    background: #050817;
+    color: white;
+    font-family: 'Roboto Mono', monospace;
+}
+
+.formulario-cadastro {
+    width: 100%;
+    max-width: 430px;
+    padding: 40px;
+    background: #10172b;
+    border: 1px solid #343b63;
+    border-radius: 15px;
+    text-align: center;
+    box-shadow: 0 0 25px rgba(112, 75, 255, 0.15);
+}
+
+.simbolo-topo {
+    font-size: 35px;
+    color: #a78bfa;
+    margin-bottom: 15px;
+}
+
+.subtitulo {
+    color: #a78bfa;
+    font-size: 12px;
+    letter-spacing: 2px;
+}
+
+.formulario-cadastro h1 {
+    color: #ffffff;
+    font-family: 'Press Start 2P', cursive;
+    font-size: 24px;
+    margin: 25px 0;
+}
+
+.descricao {
+    color: #b8bfd3;
+    font-size: 13px;
+    margin-bottom: 30px;
+}
+
+.campo {
+    text-align: left;
+    margin-bottom: 20px;
+}
+
+.campo label {
+    display: block;
+    color: #d8dcef;
+    font-size: 13px;
+    margin-bottom: 8px;
+}
+
+.campo input {
+    width: 100%;
+    padding: 13px;
+    background: #080e20;
+    border: 1px solid #343b63;
+    border-radius: 7px;
+    color: white;
+    font-family: 'Roboto Mono', monospace;
+    outline: none;
+    box-sizing: border-box;
+}
+
+.campo input:focus {
+    border-color: #a78bfa;
+    box-shadow: 0 0 8px rgba(167, 139, 250, 0.3);
+}
+
+.botao-cadastro {
+    width: 100%;
+    padding: 15px;
+    margin-top: 10px;
+    background: #7855e8;
+    border: none;
+    border-radius: 7px;
+    color: white;
+    font-family: 'Press Start 2P', cursive;
+    font-size: 11px;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.botao-cadastro:hover {
+    background: #9678ff;
+    transform: translateY(-2px);
+}
+
+.link-login {
+    color: #b8bfd3;
+    font-size: 12px;
+    margin-top: 25px;
+}
+
+.link-login a,
+.voltar {
+    color: #a78bfa;
+    text-decoration: none;
+}
+
+.link-login a:hover,
+.voltar:hover {
+    text-decoration: underline;
+}
+
+.voltar {
+    display: inline-block;
+    margin-top: 20px;
+    font-size: 12px;
+}
+
+
+
+
+
+
+
+
+
+
+
+/* DASHBOARD */
+
+.pagina-dashboard {
+    background: #050817;
+    color: white;
+    font-family: 'Roboto Mono', monospace;
+    margin: 0;
+}
+
+.cabecalho-dashboard {
+    height: 75px;
+    padding: 0 45px;
+    border-bottom: 1px solid #26344a;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.cabecalho-dashboard h2 {
+    color: #a78bfa;
+    font-family: 'Press Start 2P', cursive;
+    font-size: 17px;
+}
+
+.cabecalho-dashboard nav {
+    display: flex;
+    gap: 30px;
+}
+
+.cabecalho-dashboard nav a {
+    color: white;
+    text-decoration: none;
+    font-size: 13px;
+}
+
+.cabecalho-dashboard nav a:hover {
+    color: #a78bfa;
+}
+
+.conteudo-dashboard {
+    width: 90%;
+    max-width: 1250px;
+    margin: 0 auto;
+    padding: 45px 0;
+}
+
+.boas-vindas {
+    margin-bottom: 45px;
+}
+
+.boas-vindas .subtitulo {
+    color: #a78bfa;
+    letter-spacing: 3px;
+    font-size: 12px;
+}
+
+.boas-vindas h1 {
+    font-family: 'Press Start 2P', cursive;
+    font-size: clamp(16px, 3.4vw, 25px);   /* antes: 25px fixo (estourava no celular) */
+    line-height: 1.7;
+    overflow-wrap: anywhere;
+}
+
+.boas-vindas p {
+    color: #b8bfd3;
+    font-size: 14px;
+}
+
+.area-mapa,
+.area-regioes {
+    margin-bottom: 45px;
+}
+
+.area-mapa h2,
+.area-regioes h2 {
+    color: #a78bfa;
+    font-family: 'Press Start 2P', cursive;
+    font-size: 17px;
+    margin-bottom: 15px;
+}
+
+.area-mapa p,
+.area-regioes p {
+    color: #b8bfd3;
+    font-size: 13px;
+    line-height: 1.8;
+    margin-bottom: 20px;
+}
+
+.imagem-mapa {
+    display: block;
+    width: 100%;
+    height: auto;
+    border: 2px solid #343b63;
+    border-radius: 10px;
+}
+
+.link-regioes {
+    display: block;
+    text-decoration: none;
+}
+
+.imagem-regioes {
+    display: block;
+    width: 100%;
+    height: auto;
+    border: 2px solid #343b63;
+    border-radius: 10px;
+    transition: 0.3s;
+}
+
+.link-regioes:hover .imagem-regioes {
+    border-color: #a78bfa;
+    transform: translateY(-3px);
+}
+
+.link-regioes span {
+    display: block;
+    width: fit-content;
+    margin: 20px auto 0;
+    padding: 15px 25px;
+    background: #7855e8;
+    color: white;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: bold;
+    transition: 0.3s;
+}
+
+.link-regioes span:hover {
+    background: #9678ff;
+}
+
+
+
+/* =================================
+   MAPA MÁGICO - PIXEL QUEST
+================================= */
+
+.mapa-animado {
+    position: relative;
+    width: 85%;
+    max-width: 950px;
+    margin: 30px auto;
+    isolation: isolate;
+    border-radius: 12px;
+}
+
+/* Imagem original */
+
+.imagem-mapa {
+    display: block;
+    width: 100%;
+    height: auto;
+    position: relative;
+    z-index: 1;
+    border-radius: 12px;
+    box-shadow: 0 0 25px rgba(93, 75, 220, .25);
+}
+
+/* Aura externa */
+
+.mapa-animado::before {
+    content: "";
+    position: absolute;
+    inset: -12px;
+    z-index: 0;
+    border-radius: 20px;
+    background: linear-gradient(
+        120deg,
+        #6938ff,
+        #00bfff,
+        #a855f7,
+        #6938ff
+    );
+    background-size: 300% 300%;
+    filter: blur(25px);
+    opacity: .55;
+    animation: auraMapa 6s ease infinite;
+}
+
+/* Onda de luz */
+
+.mapa-animado::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    border-radius: 12px;
+    pointer-events: none;
+    background: linear-gradient(
+        115deg,
+        transparent 25%,
+        rgba(255,255,255,.05) 40%,
+        rgba(173,145,255,.32) 50%,
+        rgba(255,255,255,.08) 58%,
+        transparent 72%
+    );
+    background-size: 250% 100%;
+    animation: luzMapa 7s ease-in-out infinite;
+}
+
+/* Partículas */
+
+.particula {
+    position: absolute;
+    z-index: 3;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #fff2ad;
+    box-shadow:
+        0 0 8px #fff,
+        0 0 16px #c084fc,
+        0 0 28px #8b5cf6;
+    pointer-events: none;
+    animation: particulaMagica 2.5s ease-in-out infinite;
+}
+
+/* Posições das partículas */
+
+.particula-1 { top: 15%; left: 12%; }
+.particula-2 { top: 28%; left: 38%; animation-delay: .4s; }
+.particula-3 { top: 18%; left: 75%; animation-delay: .8s; }
+.particula-4 { top: 55%; left: 22%; animation-delay: 1.2s; }
+.particula-5 { top: 65%; left: 55%; animation-delay: .6s; }
+.particula-6 { top: 40%; left: 88%; animation-delay: 1.5s; }
+.particula-7 { top: 82%; left: 72%; animation-delay: 1s; }
+.particula-8 { top: 75%; left: 35%; animation-delay: 1.8s; }
+
+/* Animações */
+
+@keyframes auraMapa {
+    0%, 100% {
+        opacity: .35;
+        background-position: 0% 50%;
+    }
+
+    50% {
+        opacity: .85;
+        background-position: 100% 50%;
+    }
+}
+
+@keyframes luzMapa {
+    0%, 15% {
+        background-position: 150% 0;
+    }
+
+    65%, 100% {
+        background-position: -150% 0;
+    }
+}
+
+@keyframes particulaMagica {
+    0%, 100% {
+        transform: translateY(5px) scale(.6);
+        opacity: .2;
+    }
+
+    50% {
+        transform: translateY(-15px) scale(1.6);
+        opacity: 1;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .mapa-animado::before,
+    .mapa-animado::after,
+    .particula {
+        animation: none;
+    }
+}
+
+
+
+
+
+
+
+/* =================================
+   PÁGINA DE REGIÃO (regiao.php)
+================================= */
+
+.area-regioes {
+    text-align: center;
+}
+
+/* Imagem da região (antes: altura fixa de 450px, enorme no celular) */
+.imagem-detalhe-regiao {
+    display: block;
+    width: 90%;
+    max-width: 1200px;
+    height: clamp(200px, 38vw, 450px);
+    object-fit: cover;
+    margin: 25px auto;
+    border: 2px solid #343b63;
+    border-radius: 10px;
+}
+
+/* Barra de progresso da região */
+.regiao-barra {
+    height: 10px;
+    max-width: 420px;
+    margin: 14px auto 22px;
+    background: #080e20;
+    border: 1px solid #343b63;
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+.regiao-barra div {
+    height: 100%;
+    background: linear-gradient(90deg, #7855e8, #a78bfa);
+    transition: width 0.4s ease;
+}
+
+/* Lista de aulas da região */
+.regiao-aulas {
+    list-style: none;
+    display: grid;
+    gap: 8px;
+    max-width: 560px;
+    margin: 0 auto 25px;
+    text-align: left;
+}
+
+.regiao-aulas li {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 11px 14px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid #343b63;
+    border-radius: 8px;
+    transition: 0.3s;
+}
+
+.regiao-aulas li:hover {
+    border-color: #8968f5;
+    background: rgba(120, 85, 232, 0.08);
+}
+
+.regiao-aulas li.feita {
+    border-color: #1f6f43;
+    background: rgba(74, 222, 128, 0.06);
+}
+
+.regiao-aulas a {
+    color: #ffffff;
+    font-size: 13px;
+    font-weight: 600;
+    transition: 0.3s;
+}
+
+.regiao-aulas a:hover {
+    color: #a78bfa;
+}
+
+.regiao-aulas a span {
+    color: #a78bfa;
+    margin-right: 6px;
+}
+
+.regiao-aulas li.feita a span {
+    color: #4ade80;
+}
+
+.regiao-aulas small {
+    margin-left: auto;
+    color: #9299ad;
+    font-size: 11px;
+    white-space: nowrap;
+}
+
+/* BOTÃO EXPLORAR AULAS */
+.botao-regiao {
+    display: inline-block;
+    padding: 14px 30px;
+    margin: 20px 10px;
+    background: linear-gradient(135deg, #ffb900, #e89b00);
+    color: #050b16;
+    text-align: center;
+    text-decoration: none;
+    border: 2px solid #ffcf40;
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: bold;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: 0.3s ease;
+    box-shadow: 0 0 12px rgba(255, 185, 0, 0.2);
+}
+
+.botao-regiao:hover {
+    background: #ffd45c;
+    transform: translateY(-3px);
+    box-shadow: 0 0 18px rgba(255, 185, 0, 0.4);
+}
+
+/* BOTÃO VOLTAR PARA AS REGIÕES */
+.botao-voltar-regioes {
+    display: block;
+    width: fit-content;
+    max-width: 100%;
+    padding: 13px 28px;
+    margin: 20px auto;
+    background: #111a2c;
+    color: #c4b5fd;
+    text-align: center;
+    text-decoration: none;
+    border: 2px solid #6650a4;
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: bold;
+    letter-spacing: 1px;
+    transition: 0.3s ease;
+}
+
+.botao-voltar-regioes:hover {
+    background: #6650a4;
+    color: white;
+    transform: translateY(-3px);
+    box-shadow: 0 0 15px rgba(102, 80, 164, 0.4);
+}
+
+/* BOTÃO DE REGIÃO BLOQUEADA */
+.botao-bloqueado {
+    background: #30384d;
+    color: #9299ad;
+    cursor: not-allowed;
+}
+
+/* Foco visível para navegação por teclado */
+.cabecalho-dashboard nav a:focus-visible,
+.botao-regiao:focus-visible,
+.botao-voltar-regioes:focus-visible,
+.regiao-aulas a:focus-visible {
+    outline: 3px solid #ffb900;
+    outline-offset: 3px;
+}
+
+/* Telas menores (removidas as regras de .grade-regioes e .imagem-regiao-container,
+   que não são usadas por nenhuma página) */
+@media (max-width: 700px) {
+    .cabecalho-dashboard {
+        padding: 0 15px;
+    }
+
+    .cabecalho-dashboard nav {
+        gap: 12px;
+    }
+
+    .cabecalho-dashboard nav a {
+        font-size: 11px;
+    }
+
+    .imagem-detalhe-regiao {
+        width: 100%;
+    }
+
+    .botao-regiao,
+    .botao-voltar-regioes {
+        width: 100%;
+        margin-left: 0;
+        margin-right: 0;
+    }
+
+    .regiao-aulas li {
+        flex-wrap: wrap;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .regiao-barra div,
+    .regiao-aulas li,
+    .botao-regiao,
+    .botao-voltar-regioes {
+        transition: none;
+    }
+
+    .botao-regiao:hover,
+    .botao-voltar-regioes:hover {
+        transform: none;
+    }
+}
+
+
+
+
+/* =================================
+   PIXEL QUEST - SISTEMA DE AULAS
+================================= */
+
+.pagina-aulas {
+    width: 90%;
+    max-width: 1200px;
+    min-height: calc(100vh - 75px);
+    margin: 60px auto;
+    padding-bottom: 60px;
+}
+
+/* Título da região */
+
+.pagina-aulas h2 {
+    color: #ffffff;
+    font-family: 'Press Start 2P', monospace;
+    font-size: 20px;
+    line-height: 1.8;
+    margin-bottom: 12px;
+    letter-spacing: 1px;
+}
+
+.pagina-aulas > p {
+    color: #a7afc5;
+    font-size: 13px;
+    line-height: 1.8;
+    max-width: 700px;
+}
+
+/* Título da seção */
+
+.pagina-aulas h3 {
+    color: #a78bfa;
+    font-family: 'Press Start 2P', monospace;
+    font-size: 12px;
+    line-height: 1.8;
+    margin: 55px 0 25px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+/* Lista de aulas */
+
+.lista-aulas {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 22px;
+}
+
+/* Cartão */
+
+.card-aula {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    min-height: 210px;
+    padding: 28px;
+    background: linear-gradient(135deg, #151d38, #0c1328);
+    border: 1px solid #303b60;
+    border-radius: 14px;
+    overflow: hidden;
+    transition: 0.3s ease;
+}
+
+.card-aula::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+    background: #7855e8;
+}
+
+.card-aula::after {
+    content: "";
+    position: absolute;
+    width: 150px;
+    height: 150px;
+    right: -65px;
+    top: -65px;
+    border: 1px solid rgba(167, 139, 250, 0.15);
+    border-radius: 50%;
+    box-shadow:
+        0 0 0 20px rgba(167, 139, 250, 0.03),
+        0 0 0 40px rgba(167, 139, 250, 0.02);
+    pointer-events: none;
+}
+
+.card-aula:hover {
+    transform: translateY(-6px);
+    border-color: #8968f5;
+    box-shadow: 0 12px 30px rgba(80, 50, 180, 0.18);
+}
+
+/* Conteúdo do cartão */
+
+.card-aula h4 {
+    color: #ffffff;
+    font-family: 'Roboto Mono', monospace;
+    font-size: 17px;
+    margin: 0 0 14px;
+    line-height: 1.5;
+}
+
+.card-aula p {
+    color: #a7afc5;
+    font-size: 12px;
+    line-height: 1.8;
+    margin: 0 0 25px;
+}
+
+/* Botão */
+
+.card-aula a {
+    position: relative;
+    z-index: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    align-self: flex-start;
+    padding: 12px 20px;
+    background: #7855e8;
+    color: #ffffff;
+    border-radius: 6px;
+    text-decoration: none;
+    font-size: 10px;
+    font-weight: bold;
+    letter-spacing: 1px;
+    transition: 0.3s;
+}
+
+.card-aula a:hover {
+    background: #9678ff;
+    box-shadow: 0 0 18px rgba(120, 85, 232, 0.4);
+}
+
+/* Mensagem sem aulas */
+
+.pagina-aulas .sem-aulas {
+    color: #a7afc5;
+    background: #101a30;
+    border: 1px dashed #465078;
+    border-radius: 10px;
+    padding: 30px;
+    text-align: center;
+}
+
+/* Voltar */
+
+.pagina-aulas > a {
+    display: inline-block;
+    margin-top: 35px;
+    color: #a78bfa;
+    text-decoration: none;
+    font-size: 12px;
+    transition: 0.3s;
+}
+
+.pagina-aulas > a:hover {
+    color: #ffffff;
+}
+
+/* Cabeçalho da página */
+
+.cabecalho-dashboard {
+    background-color: #080e20;
+    position: relative;
+    z-index: 2;
+}
+
+.cabecalho-dashboard h2 {
+    margin: 0;
+}
+
+/* Responsividade */
+
+@media (max-width: 750px) {
+    .lista-aulas {
+        grid-template-columns: 1fr;
+    }
+
+    .pagina-aulas {
+        width: 92%;
+        margin: 35px auto;
+    }
+}
+
+@media (max-width: 700px) {
+    .cabecalho-dashboard {
+        padding: 0 20px;
+    }
+
+    .cabecalho-dashboard h2 {
+        font-size: 12px;
+    }
+
+    .pagina-aulas h2 {
+        font-size: 16px;
+    }
+}
+
+
+
+
+
+/* =================================
+   PIXEL QUEST - AULA COM EDITOR
+================================= */
+
+.tela-exercicio {
+    width: 100%;
+    min-height: calc(100vh - 75px);
+
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+
+    padding: 25px;
+    gap: 25px;
+}
+
+/* LADO ESQUERDO */
+
+.conteudo-exercicio {
+    min-width: 0;
+    padding: 25px;
+
+    background: #10172b;
+    border: 1px solid #343b63;
+    border-radius: 12px;
+}
+
+.conteudo-exercicio h1 {
+    color: #ffffff;
+    font-family: 'Press Start 2P', monospace;
+    font-size: 20px;
+    line-height: 1.8;
+    margin-bottom: 15px;
+}
+
+.conteudo-exercicio h2 {
+    color: #a78bfa;
+    font-family: 'Press Start 2P', monospace;
+    font-size: 12px;
+    line-height: 1.8;
+    margin-bottom: 20px;
+}
+
+.conteudo-exercicio p {
+    color: #b8bfd3;
+    font-size: 13px;
+    line-height: 1.8;
+}
+
+.conteudo-aula {
+    color: #d0d5e5;
+    font-size: 13px;
+    line-height: 2;
+    white-space: normal;
+}
+
+/* LADO DIREITO */
+
+.area-editor {
+    min-width: 0;
+    padding: 25px;
+
+    background: #10172b;
+    border: 1px solid #343b63;
+    border-radius: 12px;
+}
+
+.area-editor h2 {
+    color: #a78bfa;
+    font-family: 'Press Start 2P', monospace;
+    font-size: 12px;
+    margin-bottom: 15px;
+}
+
+/* MONACO */
+
+#editor {
+    width: 100%;
+    height: 450px;
+    border: 1px solid #8c70bb;
+    margin-top: 20px;
+}
+
+/* BOTÃO */
+
+.botao-executar {
+    margin-top: 15px;
+    padding: 12px 20px;
+
+    background: #8c70bb;
+    color: white;
+    border: none;
+
+    font-family: 'Roboto Mono', monospace;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.botao-executar:hover {
+    background: #a78bfa;
+}
+
+.botao-executar:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* RESULTADO */
+
+#resultado {
+    margin-top: 15px;
+    padding: 15px;
+
+    background: #111a32;
+    color: white;
+
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+
+    font-size: 12px;
+    line-height: 1.7;
+}
+
+/* TELAS MENORES */
+
+@media (max-width: 800px) {
+    .tela-exercicio {
+        grid-template-columns: 1fr;
+    }
+}
+
+
+
+/* =================================
+   DASHBOARD - TELA INICIAL
+================================= */
+
+/* Saudação */
+
+.pagina-dashboard .boas-vindas {
+    margin-bottom: 40px;
+}
+
+.pagina-dashboard .boas-vindas h1 {
+    font-size: clamp(22px, 4.6vw, 44px);
+    line-height: 1.5;
+    margin-bottom: 14px;
+    text-shadow: 3px 3px 0 #3b2a85, 0 0 24px rgba(167, 139, 250, 0.45);
+}
+
+.pagina-dashboard .boas-vindas p:not(.subtitulo) {
+    max-width: 560px;
+    line-height: 1.8;
+}
+
+/* Mapa maior e com os pontos das regiões */
+
+.area-mapa .mapa-animado {
+    width: 100%;
+    max-width: 1100px;
+    margin: 10px auto 40px;
+    transition: transform 0.25s ease-out;
+}
+
+.ponto-mapa {
+    position: absolute;
+    left: var(--x);
+    top: var(--y);
+    z-index: 5;
+    transform: translate(-50%, -50%);
+}
+
+.ponto-pino {
+    display: block;
+    width: 22px;
+    height: 22px;
+    background: var(--cor);
+    border: 3px solid #ffffff;
+    border-radius: 50%;
+    box-shadow: 0 0 18px var(--cor);
+    transition: transform 0.2s;
+    animation:
+        surgirPino 0.5s calc(0.6s + var(--i) * 0.4s) backwards cubic-bezier(.3, 1.6, .5, 1),
+        pingPonto 2s calc(1.1s + var(--i) * 0.4s) ease-out infinite;
+}
+
+.ponto-nome {
+    position: absolute;
+    left: 50%;
+    bottom: 34px;
+    transform: translate(-50%, 8px);
+    padding: 9px 14px;
+    background: rgba(5, 8, 23, 0.95);
+    border: 2px solid var(--cor);
+    border-radius: 8px;
+    color: #ffffff;
+    font-size: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: 0.2s;
+}
+
+.ponto-mapa:hover .ponto-nome,
+.ponto-mapa:focus-visible .ponto-nome,
+.ponto-mapa.destaque .ponto-nome {
+    opacity: 1;
+    transform: translate(-50%, 0);
+}
+
+.ponto-mapa.destaque .ponto-pino {
+    transform: scale(1.4);
+}
+
+.ponto-mapa:focus-visible {
+    outline: none;
+}
+
+.ponto-mapa:focus-visible .ponto-pino {
+    outline: 3px solid #ffb900;
+    outline-offset: 3px;
+}
+
+/* Trilha de aprendizado */
+
+.area-trilha {
+    padding-bottom: 50px;
+}
+
+.area-trilha h2 {
+    color: #a78bfa;
+    font-family: 'Press Start 2P', monospace;
+    font-size: 17px;
+    line-height: 1.6;
+    margin-bottom: 12px;
+}
+
+.area-trilha > p {
+    color: #b8bfd3;
+    font-size: 13px;
+    margin-bottom: 40px;
+}
+
+.trilha {
+    position: relative;
+    list-style: none;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 24px;
+}
+
+.trilha::before {
+    content: "";
+    position: absolute;
+    top: 11px;
+    left: 12.5%;
+    right: 12.5%;
+    height: 4px;
+    background: repeating-linear-gradient(90deg, #4a5280 0 10px, transparent 10px 18px);
+    transform-origin: left;
+    animation: tracarTrilha 1.6s 0.6s backwards ease-out;
+}
+
+.trilha a {
+    display: block;
+    text-align: center;
+    color: #ffffff;
+}
+
+.trilha-no {
+    position: relative;
+    z-index: 1;
+    display: block;
+    width: 26px;
+    height: 26px;
+    margin: 0 auto 18px;
+    background: var(--cor);
+    border: 3px solid #ffffff;
+    border-radius: 50%;
+    transition: 0.2s;
+}
+
+.trilha strong {
+    display: block;
+    font-family: 'Press Start 2P', monospace;
+    font-size: 11px;
+    line-height: 1.8;
+    margin-bottom: 10px;
+    transition: color 0.2s;
+}
+
+.trilha-desc {
+    display: block;
+    max-width: 230px;
+    margin: 0 auto;
+    color: #9299ad;
+    font-size: 12px;
+    line-height: 1.7;
+}
+
+.trilha a:hover strong,
+.trilha a.destaque strong {
+    color: var(--cor);
+}
+
+.trilha a:hover .trilha-no,
+.trilha a.destaque .trilha-no {
+    transform: scale(1.3);
+    box-shadow: 0 0 18px var(--cor);
+}
+
+.trilha a:focus-visible {
+    outline: 3px solid #ffb900;
+    outline-offset: 6px;
+}
+
+.trilha a.bloqueado {
+    filter: grayscale(1);
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Animações */
+
+@keyframes surgirPino {
+    from { transform: scale(0); opacity: 0; }
+}
+
+@keyframes pingPonto {
+    0%   { box-shadow: 0 0 0 0 var(--cor), 0 0 18px var(--cor); }
+    100% { box-shadow: 0 0 0 20px transparent, 0 0 18px var(--cor); }
+}
+
+@keyframes tracarTrilha {
+    from { transform: scaleX(0); }
+}
+
+/* Telas menores */
+
+@media (max-width: 800px) {
+    .ponto-nome { display: none; }
+
+    .ponto-pino {
+        width: 16px;
+        height: 16px;
+        border-width: 2px;
+    }
+
+    .trilha {
+        grid-template-columns: 1fr;
+        gap: 26px;
+    }
+
+    .trilha::before {
+        top: 13px;
+        bottom: 13px;
+        left: 12px;
+        right: auto;
+        width: 4px;
+        height: auto;
+        background: repeating-linear-gradient(180deg, #4a5280 0 10px, transparent 10px 18px);
+        animation: none;
+    }
+
+    .trilha a {
+        display: grid;
+        grid-template-columns: 26px 1fr;
+        gap: 0 16px;
+        text-align: left;
+    }
+
+    .trilha-no {
+        grid-row: 1 / span 2;
+        margin: 0;
+    }
+
+    .trilha-desc {
+        max-width: none;
+        margin: 0;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .ponto-pino,
+    .trilha::before { animation: none; }
+
+    .area-mapa .mapa-animado,
+    .ponto-pino,
+    .trilha-no { transition: none; }
+}
+
+
+
+/* =================================
+   DASHBOARD - LAYOUT EM TELA CHEIA
+   Texto e trilha numa coluna à esquerda; o mapa ocupa a
+   altura toda da tela à direita, inteiro e sem rolagem.
+================================= */
+
+.pagina-inicio .conteudo-dashboard {
+    width: 96%;
+    max-width: 1800px;
+    min-height: calc(100vh - 76px);
+    padding: 20px 0;
+    display: grid;
+    grid-template-columns: minmax(340px, 430px) 1fr;
+    gap: 40px;
+    align-items: center;
+}
+
+.topo-inicio {
+    display: flex;
+    flex-direction: column;
+    gap: 34px;
+    margin: 0;
+}
+
+.topo-inicio .boas-vindas {
+    margin: 0;
+}
+
+.topo-inicio .boas-vindas h1 {
+    font-size: clamp(22px, 2.4vw, 36px);
+}
+
+.topo-inicio .area-trilha {
+    padding: 0;
+}
+
+.topo-inicio .area-trilha h2 {
+    font-size: 14px;
+    margin-bottom: 8px;
+}
+
+.topo-inicio .area-trilha > p {
+    margin-bottom: 24px;
+}
+
+/* trilha na vertical, um ponto ligado ao próximo */
+
+.topo-inicio .trilha {
+    grid-template-columns: 1fr;
+    gap: 24px;
+}
+
+.topo-inicio .trilha::before {
+    display: none;
+}
+
+.topo-inicio .trilha li {
+    position: relative;
+}
+
+.topo-inicio .trilha li:not(:last-child)::before {
+    content: "";
+    position: absolute;
+    left: 11px;
+    top: 13px;
+    bottom: -37px;
+    width: 4px;
+    background: repeating-linear-gradient(180deg, #4a5280 0 10px, transparent 10px 18px);
+    transform-origin: top;
+    animation: tracarTrilhaV 0.5s backwards ease-out;
+}
+
+.topo-inicio .trilha li:nth-child(1)::before { animation-delay: 0.6s; }
+.topo-inicio .trilha li:nth-child(2)::before { animation-delay: 1s; }
+.topo-inicio .trilha li:nth-child(3)::before { animation-delay: 1.4s; }
+
+.topo-inicio .trilha a {
+    display: grid;
+    grid-template-columns: 26px 1fr;
+    gap: 0 16px;
+    text-align: left;
+}
+
+.topo-inicio .trilha-no {
+    grid-row: 1 / span 2;
+    margin: 0;
+}
+
+.topo-inicio .trilha strong {
+    margin-bottom: 6px;
+}
+
+.topo-inicio .trilha-desc {
+    max-width: none;
+    margin: 0;
+}
+
+@keyframes tracarTrilhaV {
+    from { transform: scaleY(0); }
+}
+
+/* mapa: o maior possível dentro da altura da tela (proporção 1376 x 768) */
+
+.pagina-inicio .area-mapa {
+    margin: 0;
+}
+
+.pagina-inicio .area-mapa .mapa-animado {
+    width: min(100%, calc((100vh - 76px - 60px) * 1.7917));
+    max-width: none;
+    min-width: 0;
+    margin: 0 auto;
+}
+
+/* telas estreitas: tudo em uma coluna */
+
+@media (max-width: 1000px) {
+    .pagina-inicio .conteudo-dashboard {
+        grid-template-columns: 1fr;
+        gap: 30px;
+        min-height: 0;
+    }
+
+    .pagina-inicio .area-mapa .mapa-animado {
+        width: 100%;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .topo-inicio .trilha li::before { animation: none; }
+}
+
+
+
+/* =================================
+   DASHBOARD - FUNDO: MAR À NOITE
+   O mapa é uma ilha cercada de água. O fundo continua esse
+   mar, com marcas de onda em pixel que derivam devagar.
+   Só vale para o dashboard.php (classe pagina-inicio).
+================================= */
+
+.pagina-inicio {
+    background-color: #060a20;
+}
+
+.pagina-inicio::before,
+.pagina-inicio::after {
+    content: "";
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    z-index: 0;
+    pointer-events: none;
+}
+
+/* ondas maiores */
+.pagina-inicio::before {
+    left: -128px;
+    right: -128px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='128' height='64' shape-rendering='crispEdges' fill='%2338bdf8' fill-opacity='.13'%3E%3Crect x='12' y='14' width='20' height='4'/%3E%3Crect x='20' y='10' width='8' height='4'/%3E%3Crect x='76' y='50' width='20' height='4'/%3E%3Crect x='84' y='46' width='8' height='4'/%3E%3Crect x='44' y='34' width='12' height='4'/%3E%3Crect x='48' y='30' width='4' height='4'/%3E%3C/svg%3E");
+    animation: marA 26s linear infinite;
+}
+
+/* ondas menores, mais lentas e mais fracas (dão profundidade) */
+.pagina-inicio::after {
+    left: -192px;
+    right: -192px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='192' height='112' shape-rendering='crispEdges' fill='%2338bdf8' fill-opacity='.07'%3E%3Crect x='30' y='20' width='28' height='4'/%3E%3Crect x='40' y='16' width='12' height='4'/%3E%3Crect x='120' y='64' width='20' height='4'/%3E%3Crect x='128' y='60' width='8' height='4'/%3E%3Crect x='70' y='92' width='16' height='4'/%3E%3Crect x='74' y='88' width='8' height='4'/%3E%3Crect x='160' y='28' width='12' height='4'/%3E%3Crect x='164' y='24' width='4' height='4'/%3E%3C/svg%3E");
+    animation: marB 48s linear infinite;
+}
+
+.pagina-inicio .conteudo-dashboard {
+    position: relative;
+    z-index: 1;
+}
+
+@keyframes marA { to { transform: translateX(-128px); } }
+@keyframes marB { to { transform: translateX(-192px); } }
+
+/* =================================
+   DASHBOARD - NAVBAR ESTILO JOGO
+   Barra sólida com borda grossa e sombra dura, sem vidro nem brilho.
+================================= */
+
+.pagina-inicio .cabecalho-dashboard {
+    position: relative;
+    z-index: 2;
+    background-color: #0a1030;
+    border-bottom: 4px solid #2a3170;
+    box-shadow: 0 4px 0 #03051a;
+}
+
+.pagina-inicio .cabecalho-dashboard h2 {
+    color: #c4b5fd;
+    text-shadow: 3px 3px 0 #3b2a85;
+}
+
+.pagina-inicio .cabecalho-dashboard nav {
+    gap: 12px;
+}
+
+.pagina-inicio .cabecalho-dashboard nav a {
+    position: relative;
+    padding: 9px 16px;
+    border: 2px solid transparent;
+    color: #d8dcef;
+    font-weight: 600;
+    transition: transform 0.1s, background-color 0.1s, border-color 0.1s;
+}
+
+.pagina-inicio .cabecalho-dashboard nav a:hover {
+    color: #ffffff;
+    background-color: #161d4d;
+    border-color: #6650a4;
+    box-shadow: 3px 3px 0 #03051a;
+    transform: translate(-1px, -1px);
+}
+
+.pagina-inicio .cabecalho-dashboard nav a:active {
+    box-shadow: none;
+    transform: translate(2px, 2px);
+}
+
+/* página atual: quadradinho dourado antes do texto */
+.pagina-inicio .cabecalho-dashboard nav a.ativo {
+    color: #ffffff;
+    border-color: #343b63;
+    background-color: #111847;
+}
+
+.pagina-inicio .cabecalho-dashboard nav a.ativo::before {
+    content: "";
+    display: inline-block;
+    width: 7px;
+    height: 7px;
+    margin-right: 9px;
+    background: #ffb900;
+    box-shadow: 0 0 0 2px #0a1030;
+}
+
+@media (max-width: 700px) {
+    .pagina-inicio .cabecalho-dashboard nav {
+        gap: 4px;
+    }
+
+    .pagina-inicio .cabecalho-dashboard nav a {
+        padding: 7px 9px;
+    }
+
+    .pagina-inicio .cabecalho-dashboard nav a.ativo::before {
+        display: none;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .pagina-inicio::before,
+    .pagina-inicio::after { animation: none; }
+
+    .pagina-inicio .cabecalho-dashboard nav a { transition: none; }
+}
+
+
+
+/* =====================================================
+   TELA DE HISTÓRIA (historia.php)
+   Cole este bloco no FINAL do seu style.css.
+   Classes com prefixo h- e animações com prefixo hq-,
+   sem conflito com o restante do arquivo.
+===================================================== */
+
+/* =====================================================
+   PIXEL QUEST - TELA DE HISTÓRIA
+   Mesma identidade da tela inicial: fundo #050817,
+   roxo #b58aff / #a77bff, sombra dura #3b2a85, ouro #ffd36b,
+   Press Start 2P + Roboto Mono.
+===================================================== */
+
+:root {
+    --fundo: #050817;
+    --roxo: #b58aff;
+    --roxo-2: #a77bff;
+    --roxo-claro: #c4a5ff;
+    --roxo-esc: #3b2a85;
+    --borda: #8c70bb;
+    --ouro: #ffb900;
+    --ouro-claro: #ffd36b;
+    --texto: #e0d9ed;
+    --suave: #aaa0c0;
+    --aura: rgba(172, 130, 255, .55);
+}
+
+html, body { min-height: 100%; }
+
+body.pagina-historia {
+    background-color: var(--fundo);
+    color: #fff;
+    font-family: 'Roboto Mono', monospace;
+    overflow-x: hidden;
+    overflow-y: auto;
+}
+
+.sr {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+}
+
+/* ---------- CAMADAS DE FUNDO ---------- */
+
+.h-fundo {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    background:
+        linear-gradient(rgba(5, 8, 23, .55), rgba(5, 8, 23, .8)),
+        radial-gradient(ellipse at 50% 35%, rgba(120, 85, 232, .28) 0, transparent 60%),
+        radial-gradient(ellipse at 15% 85%, rgba(56, 189, 248, .10) 0, transparent 50%),
+        url('../imagens/galaxia-historia.png') center / cover no-repeat,
+        var(--fundo);
+}
+
+.h-particulas {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+    pointer-events: none;
+}
+
+.h-vinheta {
+    position: fixed;
+    inset: 0;
+    z-index: 2;
+    pointer-events: none;
+    background:
+        repeating-linear-gradient(0deg, rgba(0, 0, 0, .10) 0 1px, transparent 1px 3px),
+        radial-gradient(ellipse at center, transparent 55%, rgba(2, 3, 12, .7) 100%);
+}
+
+/* ---------- BARRA SUPERIOR ---------- */
+
+.h-topo {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 20;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    padding: 16px 18px;
+    pointer-events: none;
+}
+
+.h-topo-esq { display: flex; gap: 10px; flex-wrap: wrap; }
+
+.h-mini {
+    pointer-events: auto;
+    padding: 10px 14px;
+    color: #d5c9eb;
+    background: rgba(10, 10, 35, .6);
+    border: 1px solid var(--borda);
+    font-family: 'Roboto Mono', monospace;
+    font-size: 11px;
+    cursor: pointer;
+    transition: background-color .3s, border-color .3s, color .3s;
+}
+
+.h-mini:hover,
+.h-mini:focus-visible {
+    color: #fff;
+    background: rgba(145, 105, 220, .35);
+    border-color: var(--roxo-claro);
+    outline: none;
+}
+
+/* ---------- PALCO ---------- */
+
+.h-palco {
+    position: relative;
+    z-index: 5;
+    min-height: 100vh;
+    min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 74px 16px 22px;
+}
+
+/* ---------- CENA ---------- */
+
+.h-cena {
+    position: relative;
+    flex: 1;
+    width: 100%;
+    min-height: 160px;
+    display: grid;
+    place-items: center;
+}
+
+.h-cena::before {
+    content: "";
+    position: absolute;
+    width: min(70vw, 460px);
+    aspect-ratio: 1;
+    border-radius: 50%;
+    background: radial-gradient(circle, var(--aura) 0, transparent 65%);
+    opacity: .55;
+    transition: background 1s;
+    animation: hq-pulsarAura 4s ease-in-out infinite;
+}
+
+.h-ilu {
+    position: absolute;
+    display: grid;
+    place-items: center;
+    opacity: 0;
+    transform: scale(.92);
+    transition: opacity .8s, transform .8s;
+    pointer-events: none;
+}
+
+.h-ilu.ativa { opacity: 1; transform: scale(1); }
+
+.h-ilu svg {
+    width: clamp(150px, 36vh, 320px);
+    height: auto;
+    overflow: visible;
+    image-rendering: pixelated;
+    filter: drop-shadow(0 0 14px var(--aura));
+}
+
+.g-flutua-lento,
+.g-cristal,
+.g-cristal-fraco {
+    transform-box: fill-box;
+    transform-origin: center;
+}
+
+.g-flutua-lento { animation: hq-flutuarSvg 4s ease-in-out infinite; }
+.g-cristal      { animation: hq-flutuarSvg 3.2s ease-in-out infinite, hq-brilhoCristal 3.2s ease-in-out infinite; }
+.g-cristal-fraco { animation: hq-tremer 2.4s steps(1) infinite, hq-apagar 2.4s steps(1) infinite; }
+.g-glitch       { animation: hq-glitch 3.6s steps(1) infinite; }
+.g-capa         { animation: hq-capa 1.6s steps(2) infinite; transform-box: fill-box; transform-origin: right center; }
+
+.g-giro, .g-giro-inv, .g-nucleo { transform-box: fill-box; transform-origin: center; }
+.g-giro     { animation: hq-giro 9s linear infinite; }
+.g-giro-inv { animation: hq-giro 6s linear infinite reverse; }
+.g-nucleo   { animation: hq-pulsarNucleo 2.4s ease-in-out infinite; }
+.g-brilha   { animation: hq-piscarSuave 1.8s ease-in-out infinite; }
+
+.fag  { animation: hq-cintilar 2.2s var(--d, 0s) steps(2) infinite; }
+.runa { animation: hq-subirRuna 3s var(--d, 0s) ease-in-out infinite; }
+.cai  { animation: hq-cair 2.4s var(--d, 0s) ease-in infinite; opacity: 0; }
+.erro { animation: hq-piscar 1.2s steps(1) infinite; }
+
+/* ---------- CARTÃO DE CAPÍTULO ---------- */
+
+.h-capitulo {
+    position: absolute;
+    inset: 0;
+    z-index: 3;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    padding: 20px;
+    text-align: center;
+    opacity: 0;
+    pointer-events: none;
+    background: radial-gradient(ellipse at center, rgba(5, 8, 23, .8) 0, rgba(5, 8, 23, .35) 60%, transparent 100%);
+}
+
+.h-capitulo.mostrar { animation: hq-cartao 2.4s steps(1) forwards; }
+
+.h-cap-num {
+    color: var(--ouro-claro);
+    font-size: 12px;
+    letter-spacing: 4px;
+    text-shadow: 0 0 14px rgba(255, 185, 0, .6);
+}
+
+.h-cap-linha {
+    width: 100px;
+    height: 2px;
+    background: linear-gradient(to right, transparent, var(--roxo-2), transparent);
+}
+
+.h-cap-titulo {
+    color: var(--roxo);
+    font-family: 'Press Start 2P', monospace;
+    font-size: clamp(16px, 4vw, 30px);
+    line-height: 1.6;
+    text-shadow: 4px 4px 0 var(--roxo-esc), 0 0 20px rgba(172, 130, 255, .6);
+}
+
+.h-capitulo.mostrar .h-cap-num,
+.h-capitulo.mostrar .h-cap-titulo { animation: hq-pixelIn .9s both; }
+
+/* ---------- CAIXA DE DIÁLOGO ---------- */
+
+.h-dialogo {
+    position: relative;
+    width: min(100%, 820px);
+    margin-top: 26px;
+    padding: 30px 26px 16px;
+    background: rgba(5, 8, 23, .9);
+    border: 2px solid var(--roxo);
+    box-shadow: 4px 4px 0 var(--roxo-esc), 0 0 30px rgba(172, 130, 255, .18);
+    cursor: pointer;
+    transition: opacity .5s;
+}
+
+.h-dialogo.oculto { opacity: 0; pointer-events: none; }
+
+/* cantos dourados */
+.h-dialogo::before,
+.h-dialogo::after {
+    content: "";
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    background: var(--ouro);
+    box-shadow: 0 0 8px rgba(255, 185, 0, .7);
+}
+.h-dialogo::before { top: -5px; right: -5px; }
+.h-dialogo::after  { bottom: -5px; left: -5px; }
+
+.h-falante {
+    position: absolute;
+    top: -15px;
+    left: 18px;
+    padding: 8px 12px;
+    color: var(--ouro-claro);
+    background: var(--roxo-esc);
+    border: 2px solid var(--roxo);
+    font-family: 'Press Start 2P', monospace;
+    font-size: 9px;
+    letter-spacing: 1px;
+}
+
+.h-progresso { display: flex; gap: 6px; margin-bottom: 14px; }
+
+.h-progresso span {
+    width: 24px;
+    height: 6px;
+    background: #2a3170;
+    transition: background-color .4s, box-shadow .4s;
+}
+.h-progresso span.feito  { background: var(--roxo); }
+.h-progresso span.atual  { background: var(--ouro); box-shadow: 0 0 10px rgba(255, 185, 0, .7); }
+
+.h-fala {
+    min-height: 5.8em;
+    color: #fff;
+    font-size: clamp(14px, 2.2vw, 17px);
+    line-height: 1.9;
+}
+
+.h-fala .destaque {
+    color: var(--ouro-claro);
+    font-weight: 600;
+    text-shadow: 0 0 10px rgba(255, 185, 0, .45);
+}
+
+.h-fala.digitando::after {
+    content: "";
+    display: inline-block;
+    width: .6em;
+    height: 1em;
+    margin-left: 4px;
+    vertical-align: -2px;
+    background: var(--roxo-claro);
+    animation: hq-piscar 1s steps(1) infinite;
+}
+
+/* ---------- BOTÕES ---------- */
+
+.h-acoes {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 14px;
+    min-height: 54px;
+    margin-top: 8px;
+}
+
+.h-dica {
+    margin-right: auto;
+    color: var(--suave);
+    font-size: 10px;
+    letter-spacing: 1px;
+}
+
+.h-btn {
+    display: none;
+    padding: 14px 18px;
+    color: #fff;
+    background: rgba(10, 10, 35, .65);
+    border: 2px solid var(--roxo);
+    font-family: 'Press Start 2P', monospace;
+    font-size: 10px;
+    cursor: pointer;
+    transition: background-color .3s, color .3s, box-shadow .3s, transform .3s;
+}
+
+.h-btn b { display: inline-block; margin-left: 4px; animation: hq-piscar 1s steps(1) infinite; }
+
+.h-btn.mostrar { display: inline-block; animation: hq-pixelIn .5s both; }
+
+.h-btn:hover,
+.h-btn:focus-visible {
+    color: #080817;
+    background: var(--roxo-2);
+    box-shadow: 0 0 25px rgba(172, 130, 255, .7);
+    transform: scale(1.05);
+    outline: none;
+}
+
+.h-iniciar {
+    padding: 18px 24px;
+    background: #7855e8;
+    border-color: var(--ouro-claro);
+    font-size: 11px;
+    line-height: 1.6;
+    text-align: center;
+}
+
+.h-iniciar.mostrar { animation: hq-pixelIn .7s both, hq-pulsoBorda 2s .8s ease-in-out infinite; }
+
+.h-iniciar:hover,
+.h-iniciar:focus-visible { background: var(--ouro-claro); border-color: #fff; }
+
+.h-dialogo.final .h-acoes { justify-content: center; }
+.h-dialogo.final .h-dica  { display: none; }
+
+.h-noscript { position: relative; z-index: 10; margin-top: 20px; text-align: center; color: var(--texto); }
+.h-noscript a { color: var(--roxo-claro); font-weight: 600; }
+
+/* ---------- TRANSIÇÃO ---------- */
+
+.h-transicao {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    background: #03050f;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.h-transicao.ligada { pointer-events: auto; animation: hq-escurecer .45s steps(6) forwards; }
+
+/* ---------- ANIMAÇÕES ---------- */
+
+@keyframes hq-piscar { 50% { opacity: 0; } }
+@keyframes hq-cintilar { 50% { opacity: .15; } }
+@keyframes hq-piscarSuave { 50% { opacity: .45; } }
+@keyframes hq-escurecer { to { opacity: 1; } }
+@keyframes hq-giro { to { transform: rotate(360deg); } }
+
+@keyframes hq-pixelIn {
+    0%   { opacity: 0; }
+    25%  { opacity: 1; }
+    35%  { opacity: .2; }
+    55%  { opacity: 1; }
+    70%  { opacity: .5; }
+    100% { opacity: 1; }
+}
+
+@keyframes hq-cartao {
+    0%   { opacity: 0; }
+    12%  { opacity: 1; }
+    80%  { opacity: 1; }
+    90%  { opacity: .4; }
+    100% { opacity: 0; }
+}
+
+@keyframes hq-pulsarAura { 50% { transform: scale(1.12); opacity: .85; } }
+@keyframes hq-pulsarNucleo { 50% { transform: scale(1.18); opacity: .8; } }
+@keyframes hq-flutuarSvg { 50% { transform: translateY(-2.5px); } }
+@keyframes hq-brilhoCristal { 50% { filter: brightness(1.25); } }
+@keyframes hq-subirRuna { 0%, 100% { transform: translateY(2px); opacity: .5; } 50% { transform: translateY(-3px); opacity: 1; } }
+@keyframes hq-cair { 0% { transform: translateY(0); opacity: 0; } 15% { opacity: 1; } 100% { transform: translateY(10px); opacity: 0; } }
+@keyframes hq-tremer { 0%, 90% { transform: translateX(0); } 92% { transform: translateX(-1px); } 96% { transform: translateX(1px); } }
+@keyframes hq-apagar { 0%, 85%, 100% { opacity: 1; } 88% { opacity: .35; } 92% { opacity: .9; } 95% { opacity: .5; } }
+@keyframes hq-glitch { 0%, 92%, 100% { transform: translate(0, 0); } 93% { transform: translate(-2px, 0); } 95% { transform: translate(2px, 1px); } 97% { transform: translate(-1px, -1px); } }
+@keyframes hq-capa { 50% { transform: scaleX(.7); } }
+
+@keyframes hq-pulsoBorda {
+    0%, 100% { box-shadow: 0 0 0 rgba(255, 211, 107, 0); }
+    50%      { box-shadow: 0 0 26px rgba(255, 211, 107, .6); }
+}
+
+/* ---------- RESPONSIVO ---------- */
+
+@media (max-width: 600px) {
+    .h-topo { padding: 10px; }
+    .h-mini { padding: 8px 10px; font-size: 10px; }
+    .h-palco { padding: 64px 12px 14px; }
+    .h-dialogo { padding: 28px 16px 12px; }
+    .h-fala { min-height: 7.6em; }
+    .h-dica { display: none; }
+    .h-acoes { justify-content: center; }
+    .h-btn { width: 100%; text-align: center; }
+    .h-cap-num { font-size: 10px; letter-spacing: 3px; }
+}
+
+@media (max-height: 560px) and (orientation: landscape) {
+    .h-palco { padding-top: 56px; }
+    .h-ilu svg { width: clamp(100px, 30vh, 180px); }
+    .h-fala { min-height: 4em; font-size: 13px; }
+    .h-dialogo { margin-top: 10px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .h-cena::before,
+    .h-ilu svg *,
+    .h-btn b { animation: none !important; }
+
+    .h-capitulo.mostrar { animation: none; opacity: 1; }
+    .h-capitulo.mostrar .h-cap-num,
+    .h-capitulo.mostrar .h-cap-titulo,
+    .h-btn.mostrar,
+    .h-iniciar.mostrar { animation: none; }
+    .cai { opacity: 0; }
+}
