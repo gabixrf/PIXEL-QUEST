@@ -91,7 +91,7 @@ function botao_post(
 // Troca a posição de um item com o vizinho (ordem é UNIQUE no banco)
 function mover_ordem(PDO $c, string $tabela, ?string $pai, int $id, string $direcao): void
 {
-    if (!in_array($tabela, ["regioes", "aulas", "exercicios"], true)) return;
+    if (!in_array($tabela, ["regioes", "aulas", "exercicios", "questoes"], true)) return;
     if ($pai !== null && !in_array($pai, ["regiao_id", "aula_id"], true)) return;
 
     $st = $c->prepare("SELECT ordem" . ($pai ? ", $pai" : "") . " FROM $tabela WHERE id = ?");
@@ -103,8 +103,8 @@ function mover_ordem(PDO $c, string $tabela, ?string $pai, int $id, string $dire
     $ord = $direcao === "subir" ? "DESC" : "ASC";
 
     $sql = "SELECT id, ordem FROM $tabela WHERE ordem $op ?"
-         . ($pai ? " AND $pai = ?" : "")
-         . " ORDER BY ordem $ord LIMIT 1";
+        . ($pai ? " AND $pai = ?" : "")
+        . " ORDER BY ordem $ord LIMIT 1";
 
     $par = [$atual["ordem"]];
     if ($pai) $par[] = $atual[$pai];
@@ -165,46 +165,50 @@ function admin_topo(string $titulo, string $ativo = ""): void
         "regioes"    => ["Regiões", "regioes.php"],
         "aulas"      => ["Aulas", "aulas.php"],
         "exercicios" => ["Exercícios", "exercicios.php"],
+        "questoes"   => ["Questões", "questoes.php"],
         "missoes"    => ["Missões", "missoes.php"],
         "usuarios"   => ["Usuários", "usuarios.php"],
     ];
-    ?>
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?= h($titulo) ?> | Admin PIXEL QUEST</title>
-    <link rel="stylesheet" href="../css/admin.css">
-</head>
-<body class="admin">
+?>
+    <!DOCTYPE html>
+    <html lang="pt-br">
 
-<header class="admin-topo">
-    <span class="admin-marca">PIXEL QUEST <small>admin</small></span>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title><?= h($titulo) ?> | Admin PIXEL QUEST</title>
+        <link rel="stylesheet" href="../css/admin.css">
+    </head>
 
-    <nav>
-        <?php foreach ($menu as $chave => [$rotulo, $link]): ?>
-            <a href="<?= $link ?>" class="<?= $chave === $ativo ? 'ativo' : '' ?>"><?= $rotulo ?></a>
-        <?php endforeach; ?>
-    </nav>
+    <body class="admin">
 
-    <nav class="admin-conta">
-        <a href="../dashboard.php">Ver o site</a>
-        <a href="../logout.php">Sair</a>
-    </nav>
-</header>
+        <header class="admin-topo">
+            <span class="admin-marca">PIXEL QUEST <small>admin</small></span>
 
-<main class="admin-main">
+            <nav>
+                <?php foreach ($menu as $chave => [$rotulo, $link]): ?>
+                    <a href="<?= $link ?>" class="<?= $chave === $ativo ? 'ativo' : '' ?>"><?= $rotulo ?></a>
+                <?php endforeach; ?>
+            </nav>
 
-<?php foreach ($_SESSION["flash"] ?? [] as [$tipo, $mensagem]): ?>
-    <div class="flash <?= h($tipo) ?>"><?= h($mensagem) ?></div>
-<?php endforeach; unset($_SESSION["flash"]); ?>
+            <nav class="admin-conta">
+                <a href="../dashboard.php">Ver o site</a>
+                <a href="../logout.php">Sair</a>
+            </nav>
+        </header>
 
-    <h1><?= h($titulo) ?></h1>
-<?php
-}
+        <main class="admin-main">
 
-function admin_rodape(): void
-{
-    echo "</main>\n</body>\n</html>";
-}
+            <?php foreach ($_SESSION["flash"] ?? [] as [$tipo, $mensagem]): ?>
+                <div class="flash <?= h($tipo) ?>"><?= h($mensagem) ?></div>
+            <?php endforeach;
+            unset($_SESSION["flash"]); ?>
+
+            <h1><?= h($titulo) ?></h1>
+        <?php
+    }
+
+    function admin_rodape(): void
+    {
+        echo "</main>\n</body>\n</html>";
+    }

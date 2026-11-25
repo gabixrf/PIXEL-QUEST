@@ -8,6 +8,7 @@ $cards = [
     "Regiões"    => $n("SELECT COUNT(*) FROM regioes"),
     "Aulas"      => $n("SELECT COUNT(*) FROM aulas"),
     "Exercícios" => $n("SELECT COUNT(*) FROM exercicios"),
+    "Questões"   => $n("SELECT COUNT(*) FROM questoes"),
     "Missões"    => $n("SELECT COUNT(*) FROM missoes"),
 ];
 
@@ -17,9 +18,10 @@ $avisos = [];
 $q = $n("SELECT COUNT(*) FROM aulas WHERE publicada = 1 AND (conteudo IS NULL OR conteudo = '')");
 if ($q) $avisos[] = ["$q aula(s) publicada(s) sem conteúdo", "aulas.php"];
 
-$q = $n("SELECT COUNT(*) FROM aulas a WHERE a.publicada = 1
-         AND NOT EXISTS (SELECT 1 FROM exercicios e WHERE e.aula_id = a.id AND e.ativo = 1)");
-if ($q) $avisos[] = ["$q aula(s) publicada(s) sem exercício ativo", "exercicios.php"];
+$q = $n("SELECT COUNT(*) FROM aulas a WHERE a.publicada=1
+         AND NOT EXISTS (SELECT 1 FROM exercicios e WHERE e.aula_id=a.id AND e.ativo=1)
+         AND NOT EXISTS (SELECT 1 FROM questoes q WHERE q.aula_id=a.id AND q.ativa=1)");
+if ($q) $avisos[] = ["$q aula(s) publicada(s) sem questão ou exercício ativo", "aulas.php"];
 
 $q = $n("SELECT COUNT(*) FROM missoes WHERE ativa = 1
          AND (saida_esperada IS NULL OR saida_esperada = '')");
@@ -59,16 +61,23 @@ admin_topo("Painel", "index");
 <?php if ($recentes): ?>
     <div class="tabela-wrap">
         <table class="tabela">
-            <thead><tr><th>Nome</th><th>Usuário</th><th>XP</th><th>Cadastro</th></tr></thead>
-            <tbody>
-            <?php foreach ($recentes as $u): ?>
+            <thead>
                 <tr>
-                    <td><?= h($u["nome"]) ?></td>
-                    <td><?= h($u["usuario"]) ?></td>
-                    <td><?= (int) $u["xp"] ?></td>
-                    <td><?= h(date("d/m/Y H:i", strtotime($u["criado_em"]))) ?></td>
+                    <th>Nome</th>
+                    <th>Usuário</th>
+                    <th>XP</th>
+                    <th>Cadastro</th>
                 </tr>
-            <?php endforeach; ?>
+            </thead>
+            <tbody>
+                <?php foreach ($recentes as $u): ?>
+                    <tr>
+                        <td><?= h($u["nome"]) ?></td>
+                        <td><?= h($u["usuario"]) ?></td>
+                        <td><?= (int) $u["xp"] ?></td>
+                        <td><?= h(date("d/m/Y H:i", strtotime($u["criado_em"]))) ?></td>
+                    </tr>
+                <?php endforeach; ?>
             </tbody>
         </table>
     </div>

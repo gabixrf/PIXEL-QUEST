@@ -1,0 +1,59 @@
+
+Floresta da Sequencia - A base
+
+AULA	CONTEÚDO
+01	Conhecendo o mundo da programação
+02	Aprendendo a pensar logicamente
+03	O que são algoritmos?
+04	Organizando sequências de instruções
+05	Identificando e corrigindo erros em algoritmos
+06	Conhecendo as linguagens de programação e o Python
+07	Conhecendo o editor e executando o primeiro programa
+08	Exibindo informações com print()
+09	Conhecendo as variáveis
+10	Criando e atribuindo valores às variáveis
+11	Conhecendo os tipos de dados
+12	Recebendo informações com input() e realizando operações básicas
+
+
+
+
+VALE DAS DECISÕES - condicionais
+
+
+AULA	CONTEÚDO
+01	O que são decisões na programação?
+02	Conhecendo os operadores de comparação
+03	Aprendendo o if
+04	Aprendendo o else
+05	Conhecendo o elif
+06	Utilizando operadores lógicos and, or e not
+07	Criando condições dentro de outras condições
+08	Resolvendo problemas com estruturas condicionais
+
+
+
+Montanhas da Repetição — Laço for
+
+AULA	CONTEÚDO
+01	Por que precisamos repetir instruções?
+02	Conhecendo o laço for
+03	Entendendo o funcionamento do range()
+04	Controlando a quantidade de repetições
+05	Trabalhando com contadores
+06	Trabalhando com acumuladores
+07	Utilizando for dentro de for
+08	Resolvendo problemas com o laço for
+
+
+Cavernas da Repetição — Laço while
+
+AULA	CONTEÚDO
+01	Conhecendo repetições condicionais
+02	Aprendendo o while
+03	Entendendo as condições de parada
+04	Atualizando variáveis dentro de repetições
+05	Identificando e evitando loops infinitos
+06	Conhecendo break e continue
+07	Diferenças entre for e while
+08	Resolvendo problemas com o while

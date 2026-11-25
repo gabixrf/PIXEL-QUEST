@@ -34,19 +34,23 @@ $lista = $conexao->query(
 // Aulas publicadas com o progresso do aluno em cada uma
 $st = $conexao->prepare(
     "SELECT a.id, a.regiao_id, a.titulo,
-        (SELECT COUNT(*) FROM exercicios e WHERE e.aula_id = a.id AND e.ativo = 1) AS total,
-        (SELECT COUNT(*) FROM progresso p
-           INNER JOIN exercicios e ON e.id = p.exercicio_id
-           WHERE e.aula_id = a.id AND e.ativo = 1 AND p.usuario_id = ? AND p.concluido = 1) AS feitos
-     FROM aulas a WHERE a.publicada = 1 ORDER BY a.regiao_id, a.ordem"
+        ((SELECT COUNT(*) FROM exercicios e WHERE e.aula_id=a.id AND e.ativo=1) +
+         (SELECT COUNT(*) FROM questoes q WHERE q.aula_id=a.id AND q.ativa=1)) AS total,
+        ((SELECT COUNT(*) FROM progresso p INNER JOIN exercicios e ON e.id=p.exercicio_id
+          WHERE e.aula_id=a.id AND e.ativo=1 AND p.usuario_id=? AND p.concluido=1) +
+         (SELECT COUNT(*) FROM progresso_questoes pq INNER JOIN questoes q ON q.id=pq.questao_id
+          WHERE q.aula_id=a.id AND q.ativa=1 AND pq.usuario_id=?)) AS feitos
+     FROM aulas a WHERE a.publicada=1 ORDER BY a.regiao_id,a.ordem"
 );
-$st->execute([$uid]);
+$st->execute([$uid, $uid]);
 
 $aulas = [];
 foreach ($st->fetchAll() as $a) {
     $aulas[$a["regiao_id"]][] = [
-        "id" => (int) $a["id"], "titulo" => $a["titulo"],
-        "total" => (int) $a["total"], "feitos" => (int) $a["feitos"],
+        "id" => (int) $a["id"],
+        "titulo" => $a["titulo"],
+        "total" => (int) $a["total"],
+        "feitos" => (int) $a["feitos"],
     ];
 }
 
@@ -72,7 +76,7 @@ foreach ($lista as $r) {
     $feitos = array_sum(array_column($as, "feitos"));
 
     $bloqueada = !$anterior_ok;
-    $completa = !$bloqueada && $feitos >= $total;   // 0 de 0 conta como concluída
+    $completa = !$bloqueada && $total > 0 && $feitos >= $total;
 
     $m = $missoes[$rid] ?? null;
     if (!$m) $missao = "nenhuma";
@@ -85,9 +89,12 @@ foreach ($lista as $r) {
         "nome" => $r["nome"],
         "descricao" => $r["descricao"] ?? "",
         "tema" => tema_da_regiao($r["nome"], (int) $r["ordem"]),
-        "total" => $total, "feitos" => $feitos,
-        "bloqueada" => $bloqueada, "completa" => $completa,
-        "missao" => $missao, "missaoTitulo" => $m["titulo"] ?? "",
+        "total" => $total,
+        "feitos" => $feitos,
+        "bloqueada" => $bloqueada,
+        "completa" => $completa,
+        "missao" => $missao,
+        "missaoTitulo" => $m["titulo"] ?? "",
         "anterior" => $nome_anterior,
         "aulas" => $as,
     ];
@@ -98,64 +105,69 @@ foreach ($lista as $r) {
 ?>
 <!DOCTYPE html>
 <html lang="pt-br">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PIXEL QUEST | Regiões</title>
     <link rel="stylesheet" href="css/selecao-regioes.css?v=<?= versao_arquivo("css/selecao-regioes.css") ?>">
 </head>
+
 <body class="tela-ilhas">
 
-<main class="tabuleiro">
+    <main class="tabuleiro">
 
-    <header class="topo-ilhas">
-        <p class="subtitulo">EXPLORE NOVOS TERRITÓRIOS</p>
-        <h1>Regiões do reino</h1>
-    </header>
+        <header class="topo-ilhas">
+            <p class="subtitulo">EXPLORE NOVOS TERRITÓRIOS</p>
+            <h1>Regiões do reino</h1>
+        </header>
 
-    <a href="dashboard.php" class="fechar" aria-label="Voltar ao mapa">✕</a>
+        <a href="dashboard.php" class="fechar" aria-label="Voltar ao mapa">✕</a>
 
-    <?php if ($regioes): ?>
-        <div class="ilhas">
-            <?php foreach ($regioes as $r): ?>
-                <button type="button"
+        <?php if ($regioes): ?>
+            <div class="ilhas">
+                <?php foreach ($regioes as $r): ?>
+                    <button type="button"
                         class="ilha <?= $r["bloqueada"] ? "bloqueada" : "livre" ?>"
                         data-id="<?= $r["id"] ?>"
                         aria-haspopup="dialog"
                         aria-label="<?= htmlspecialchars($r["nome"]) ?>: ver informações">
 
-                    <span class="ilha-arte" data-ilha data-tema="<?= htmlspecialchars($r["tema"]) ?>"></span>
-                    <?php if ($r["bloqueada"]): ?><span class="cadeado" aria-hidden="true">🔒</span><?php endif; ?>
+                        <span class="ilha-arte" data-ilha data-tema="<?= htmlspecialchars($r["tema"]) ?>"></span>
+                        <?php if ($r["bloqueada"]): ?><span class="cadeado" aria-hidden="true">🔒</span><?php endif; ?>
 
-                    <span class="placa"><?= htmlspecialchars($r["nome"]) ?></span>
+                        <span class="placa"><?= htmlspecialchars($r["nome"]) ?></span>
 
-                    <span class="contadores">
-                        <span class="pilula <?= $r["completa"] && $r["total"] > 0 ? "feita" : "" ?>">
-                            <span>Exercícios</span>
-                            <span><?= $r["bloqueada"] ? "🔒" : "✦ " . $r["feitos"] . "/" . $r["total"] ?></span>
-                        </span>
-                        <?php if ($r["missao"] !== "nenhuma"): ?>
-                            <span class="pilula missao <?= $r["missao"] === "trancada" ? "trancada" : "" ?>">
-                                <span>Missão</span>
-                                <span><?= $r["missao"] === "trancada" ? "🔒" : ($r["missao"] === "feita" ? "✓" : "✦") ?></span>
+                        <span class="contadores">
+                            <span class="pilula <?= $r["completa"] && $r["total"] > 0 ? "feita" : "" ?>">
+                                <span>Atividades</span>
+                                <span><?= $r["bloqueada"] ? "🔒" : "✦ " . $r["feitos"] . "/" . $r["total"] ?></span>
                             </span>
-                        <?php endif; ?>
-                    </span>
-                </button>
-            <?php endforeach; ?>
-        </div>
-    <?php else: ?>
-        <p class="vazio">Nenhuma região disponível por enquanto. Volte em breve!</p>
-    <?php endif; ?>
+                            <?php if ($r["missao"] !== "nenhuma"): ?>
+                                <span class="pilula missao <?= $r["missao"] === "trancada" ? "trancada" : "" ?>">
+                                    <span>Missão</span>
+                                    <span><?= $r["missao"] === "trancada" ? "🔒" : ($r["missao"] === "feita" ? "✓" : "✦") ?></span>
+                                </span>
+                            <?php endif; ?>
+                        </span>
+                    </button>
+                <?php endforeach; ?>
+            </div>
+        <?php else: ?>
+            <p class="vazio">Nenhuma região disponível por enquanto. Volte em breve!</p>
+        <?php endif; ?>
 
-</main>
+    </main>
 
-<dialog id="painel" aria-labelledby="painel-titulo">
-    <div class="p-corpo"></div>
-    <form method="dialog"><button class="p-fechar" aria-label="Fechar">✕</button></form>
-</dialog>
+    <dialog id="painel" aria-labelledby="painel-titulo">
+        <div class="p-corpo"></div>
+        <form method="dialog"><button class="p-fechar" aria-label="Fechar">✕</button></form>
+    </dialog>
 
-<script id="dados" type="application/json"><?= json_encode($regioes, JSON_HEX_TAG | JSON_HEX_AMP | JSON_UNESCAPED_UNICODE) ?></script>
-<script type="module" src="js/selecao-regioes.js?v=<?= versao_arquivo("js/selecao-regioes.js") ?>"></script>
+    <script id="dados" type="application/json">
+        <?= json_encode($regioes, JSON_HEX_TAG | JSON_HEX_AMP | JSON_UNESCAPED_UNICODE) ?>
+    </script>
+    <script type="module" src="js/selecao-regioes.js?v=<?= versao_arquivo("js/selecao-regioes.js") ?>"></script>
 </body>
+
 </html>

@@ -33,7 +33,6 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                 )->execute([$titulo, $resumo, $conteudo, $publicada, $id]);
 
                 flash("ok", "Aula atualizada.");
-
             } else {
                 $regiao_id = post_int("regiao_id");
 
@@ -55,16 +54,13 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                 flash("ok", "Aula criada.");
                 redirecionar("aulas.php?regiao=$regiao_id");
             }
-
         } elseif ($acao === "alternar") {
 
             $conexao->prepare("UPDATE aulas SET publicada = IF(publicada = 1, 0, 1) WHERE id = ?")->execute([$id]);
             flash("ok", "Status da aula alterado.");
-
         } elseif ($acao === "mover") {
 
             mover_ordem($conexao, "aulas", "regiao_id", $id, ($_POST["dir"] ?? "") === "subir" ? "subir" : "descer");
-
         } elseif ($acao === "excluir") {
 
             $conexao->prepare("DELETE FROM aulas WHERE id = ?")->execute([$id]);
@@ -72,7 +68,6 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         }
 
         redirecionar($base);
-
     } catch (PDOException $e) {
 
         if ($e->getCode() === "23000" && $acao === "excluir") {
@@ -82,8 +77,10 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             flash("erro", "Erro ao gravar no banco de dados.");
         }
 
-        if ($acao === "salvar") { $dados = $_POST; $editar_id = $id; }
-
+        if ($acao === "salvar") {
+            $dados = $_POST;
+            $editar_id = $id;
+        }
     } catch (InvalidArgumentException $e) {
 
         flash("erro", $e->getMessage());
@@ -94,7 +91,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
 /* ---------- Formulário ---------- */
 
-$d = ["titulo" => "", "resumo" => "", "conteudo" => "", "publicada" => 1, "regiao_id" => $filtro];
+$d = ["titulo" => "", "resumo" => "", "conteudo" => "", "publicada" => 0, "regiao_id" => $filtro];
 $modo_form = $dados !== null || isset($_GET["novo"]) || isset($_GET["editar"]);
 
 if ($dados !== null) {
@@ -122,11 +119,12 @@ $regioes = $conexao->query("SELECT id, nome FROM regioes ORDER BY ordem")->fetch
 /* ---------- Lista ---------- */
 
 $sql = "SELECT a.*, r.nome AS regiao,
-               (SELECT COUNT(*) FROM exercicios e WHERE e.aula_id = a.id) AS n_ex
+               (SELECT COUNT(*) FROM exercicios e WHERE e.aula_id = a.id) AS n_ex,
+               (SELECT COUNT(*) FROM questoes q WHERE q.aula_id = a.id) AS n_q
         FROM aulas a
         INNER JOIN regioes r ON r.id = a.regiao_id"
-     . ($filtro ? " WHERE a.regiao_id = ?" : "")
-     . " ORDER BY r.ordem, a.ordem";
+    . ($filtro ? " WHERE a.regiao_id = ?" : "")
+    . " ORDER BY r.ordem, a.ordem";
 
 $st = $conexao->prepare($sql);
 $st->execute($filtro ? [$filtro] : []);
@@ -198,39 +196,55 @@ if ($modo_form): ?>
     </div>
 
     <?php if ($aulas): ?>
-    <div class="tabela-wrap">
-    <table class="tabela">
-        <thead>
-            <tr><th>Ordem</th><th>Título</th><th>Região</th><th>Conteúdo</th><th>Exercícios</th><th>Status</th><th>Ações</th></tr>
-        </thead>
-        <tbody>
-        <?php foreach ($aulas as $a): ?>
-            <tr>
-                <td class="ordem">
-                    <?= (int) $a["ordem"] ?>
-                    <?php botao_post("mover", (int) $a["id"], "↑", "btn btn-peq btn-sec", ["dir" => "subir"]); ?>
-                    <?php botao_post("mover", (int) $a["id"], "↓", "btn btn-peq btn-sec", ["dir" => "descer"]); ?>
-                </td>
-                <td><?= h($a["titulo"]) ?></td>
-                <td><?= h($a["regiao"]) ?></td>
-                <td>
-                    <span class="badge <?= trim((string) $a["conteudo"]) !== "" ? "ok" : "alerta" ?>">
-                        <?= trim((string) $a["conteudo"]) !== "" ? "Preenchido" : "Vazio" ?>
-                    </span>
-                </td>
-                <td><a href="exercicios.php?aula=<?= (int) $a["id"] ?>"><?= (int) $a["n_ex"] ?></a></td>
-                <td><span class="badge <?= $a["publicada"] ? "ok" : "off" ?>"><?= $a["publicada"] ? "Publicada" : "Rascunho" ?></span></td>
-                <td class="acoes">
-                    <a class="btn btn-peq btn-sec" href="<?= h($base . ($filtro ? "&" : "?")) ?>editar=<?= (int) $a["id"] ?>">Editar</a>
-                    <?php botao_post("alternar", (int) $a["id"], $a["publicada"] ? "Despublicar" : "Publicar"); ?>
-                    <?php botao_post("excluir", (int) $a["id"], "Excluir", "btn btn-peq btn-perigo", [],
-                        "Excluir a aula \"{$a["titulo"]}\"? Só funciona se ela não tiver exercícios."); ?>
-                </td>
-            </tr>
-        <?php endforeach; ?>
-        </tbody>
-    </table>
-    </div>
+        <div class="tabela-wrap">
+            <table class="tabela">
+                <thead>
+                    <tr>
+                        <th>Ordem</th>
+                        <th>Título</th>
+                        <th>Região</th>
+                        <th>Conteúdo</th>
+                        <th>Exercícios</th>
+                        <th>Questões</th>
+                        <th>Status</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach ($aulas as $a): ?>
+                        <tr>
+                            <td class="ordem">
+                                <?= (int) $a["ordem"] ?>
+                                <?php botao_post("mover", (int) $a["id"], "↑", "btn btn-peq btn-sec", ["dir" => "subir"]); ?>
+                                <?php botao_post("mover", (int) $a["id"], "↓", "btn btn-peq btn-sec", ["dir" => "descer"]); ?>
+                            </td>
+                            <td><?= h($a["titulo"]) ?></td>
+                            <td><?= h($a["regiao"]) ?></td>
+                            <td>
+                                <span class="badge <?= trim((string) $a["conteudo"]) !== "" ? "ok" : "alerta" ?>">
+                                    <?= trim((string) $a["conteudo"]) !== "" ? "Preenchido" : "Vazio" ?>
+                                </span>
+                            </td>
+                            <td><a href="exercicios.php?aula=<?= (int) $a["id"] ?>"><?= (int) $a["n_ex"] ?></a></td>
+                            <td><a href="questoes.php?aula=<?= (int) $a["id"] ?>"><?= (int) $a["n_q"] ?></a></td>
+                            <td><span class="badge <?= $a["publicada"] ? "ok" : "off" ?>"><?= $a["publicada"] ? "Publicada" : "Rascunho" ?></span></td>
+                            <td class="acoes">
+                                <a class="btn btn-peq btn-sec" href="<?= h($base . ($filtro ? "&" : "?")) ?>editar=<?= (int) $a["id"] ?>">Editar</a>
+                                <?php botao_post("alternar", (int) $a["id"], $a["publicada"] ? "Despublicar" : "Publicar"); ?>
+                                <?php botao_post(
+                                    "excluir",
+                                    (int) $a["id"],
+                                    "Excluir",
+                                    "btn btn-peq btn-perigo",
+                                    [],
+                                    "Excluir a aula \"{$a["titulo"]}\"? Só funciona se não houver atividades vinculadas."
+                                ); ?>
+                            </td>
+                        </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+        </div>
     <?php else: ?>
         <p class="vazio">Nenhuma aula encontrada. Crie a primeira.</p>
     <?php endif; ?>
