@@ -1,59 +1,134 @@
 <!DOCTYPE html>
 <html lang="pt-br">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Uma nova jornada | Pixel Quest</title>
+
+    <title>Uma nova jornada - Pixel Quest</title>
 
     <link rel="stylesheet" href="css/style.css">
 </head>
 
-<body class="pagina-historia">
+<body>
 
-    <!-- Fundo: a mesma cena da tela inicial (escurecida) -->
-    <div class="fundo"></div>
+    <main class="tela-historia">
 
-    <!-- Estrelinhas piscando (o JS cria) -->
-    <div class="estrelas" id="estrelas"></div>
+        <button class="pular-historia" id="pularHistoria">
+            PULAR HISTÓRIA »
+        </button>
 
-    <!-- Botão de pular -->
-    <a href="cadastro_usuario.php" class="pular">PULAR »</a>
+        <section class="conteudo-historia">
 
-    <!-- NOVO: palco onde aparece o desenho de cada capítulo (o JS desenha aqui) -->
-    <section class="cena" id="cena" aria-hidden="true"></section>
+            <p class="identificacao">
+                ✦ UMA HISTÓRIA ESTÁ PRESTES A COMEÇAR ✦
+            </p>
 
-    <!-- Caixa de diálogo estilo RPG -->
-    <main class="dialogo" id="dialogo">
+            <div class="linha-decorativa"></div>
 
-        <div class="nome">✦ NARRADOR</div>
+            <h2 class="titulo-historia">
+                O REINO DOS PIXELS
+            </h2>
 
-        <h1 id="titulo"></h1>
+            <p class="subtitulo-historia">
+                Uma jornada em busca do equilíbrio.
+            </p>
 
-        <div class="area-texto">
-            <p id="texto"></p>
-            <span class="seta" id="seta">▼</span>
-        </div>
+            <h1 id="textoHistoria"></h1>
 
-        <!-- Botões de escolha (só no capítulo da escolha) -->
-        <div class="escolhas" id="escolhas"></div>
-
-        <div class="rodape">
-            <div class="pontos" id="pontos"></div>
-
-            <div class="botoes">
-                <button id="voltar" class="botao-voltar" type="button">« VOLTAR</button>
-                <button id="avancar" class="botao-avancar" type="button">CONTINUAR ▶</button>
+            <div class="indicador" id="indicador">
+                <span></span>
+                <span></span>
+                <span></span>
             </div>
-        </div>
+
+            <a href="cadastro_usuario.php" class="botao-iniciar" id="botaoIniciar">
+                INICIAR AVENTURA
+            </a>
+
+        </section>
 
     </main>
 
-    <noscript>
-        <p style="position:relative;z-index:9;text-align:center;padding:20px">
-            <a href="cadastro_usuario.php" style="color:#c4a5ff">Continuar para o cadastro »</a>
-        </p>
-    </noscript>
+    <script>
+        const frases = [
+            "Em um universo distante, existia um reino formado por pixels.",
+            "Era um lugar onde tudo funcionava em perfeita harmonia.",
+            "Mas, certo dia, o equilíbrio do Reino dos Pixels foi perdido.",
+            "Os caminhos ficaram confusos e os desafios começaram a surgir.",
+            "Para restaurar o reino, será necessário aprender a lógica por trás de cada desafio.",
+            "Sua jornada começa agora."
+        ];
 
-    <script src="js/historia.js"></script>
+        const textoHistoria = document.getElementById("textoHistoria");
+        const indicador = document.getElementById("indicador");
+        const botaoIniciar = document.getElementById("botaoIniciar");
+        const pularHistoria = document.getElementById("pularHistoria");
+
+        let fraseAtual = 0;
+        let caractereAtual = 0;
+        let pulando = false;
+
+        function escreverFrase() {
+
+            if (pulando) return;
+
+            const frase = frases[fraseAtual];
+
+            textoHistoria.classList.add("visivel");
+
+            if (caractereAtual < frase.length) {
+
+                textoHistoria.textContent += frase.charAt(caractereAtual);
+                caractereAtual++;
+
+                setTimeout(escreverFrase, 55);
+
+            } else {
+
+                setTimeout(apagarFrase, 2200);
+
+            }
+        }
+
+        function apagarFrase() {
+
+            textoHistoria.classList.remove("visivel");
+
+            setTimeout(() => {
+
+                fraseAtual++;
+                caractereAtual = 0;
+
+                if (fraseAtual < frases.length) {
+
+                    textoHistoria.textContent = "";
+                    escreverFrase();
+
+                } else {
+
+                    finalizarHistoria();
+
+                }
+
+            }, 700);
+        }
+
+        function finalizarHistoria() {
+
+            indicador.style.display = "none";
+            textoHistoria.textContent = "Sua aventura começa aqui.";
+            textoHistoria.classList.add("visivel");
+
+            botaoIniciar.classList.add("mostrar");
+        }
+
+        pularHistoria.addEventListener("click", () => {
+            window.location.href = "cadastro_usuario.php";
+        });
+
+        escreverFrase();
+    </script>
+
 </body>
 </html>
