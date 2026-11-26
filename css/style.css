@@ -25,9 +25,12 @@ a {
 
 
 /* ==============================
-   TELA INICIAL  (substitui a seção antiga "TELA INICIAL" do style.css:
-   apague tudo de .tela-inicial até .indicacao e cole este bloco no lugar)
+   TELA INICIAL  (substitui a seção "TELA INICIAL" do style.css:
+   apague tudo de .tela-inicial / loader / cena / botao-som e cole este bloco no lugar)
 ============================== */
+
+@property --z { syntax: '<number>'; inherits: false; initial-value: 1.05; }
+@property --n { syntax: '<number>'; inherits: true;  initial-value: 0; }
 
 body.carregando { overflow: hidden; }
 
@@ -47,7 +50,7 @@ body.carregando { overflow: hidden; }
     top: 50%;
     width: max(100vw, 100vh);
     aspect-ratio: 1;
-    transform: translate(calc(-50% + var(--px, 0px)), calc(-50% + var(--py, 0px))) scale(1.05);
+    transform: translate(calc(-50% + var(--px, 0px)), calc(-50% + var(--py, 0px))) scale(var(--z, 1.05));
 }
 
 .quadro > * { position: absolute; }
@@ -62,12 +65,52 @@ body.carregando { overflow: hidden; }
     image-rendering: pixelated;
 }
 
+/* zoom cinematográfico ao entrar */
+.entrou .quadro { animation: zoomOut 4s cubic-bezier(.2, .7, .2, 1) both; }
+
 /* personagem: cópia da imagem recortada por máscara, "respira" sobre o original */
 .personagem {
     -webkit-mask-image: radial-gradient(ellipse 13% 17% at 26% 68%, #000 75%, transparent 100%);
             mask-image: radial-gradient(ellipse 13% 17% at 26% 68%, #000 75%, transparent 100%);
     transform-origin: 26% 81%;
     animation: respirar 3.4s ease-in-out infinite;
+}
+
+/* aurora / nebulosa pulsando no céu */
+.aurora {
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 60%;
+    mix-blend-mode: screen;
+    pointer-events: none;
+    background:
+        radial-gradient(ellipse 40% 25% at 60% 25%, rgba(140, 90, 255, .25), transparent),
+        radial-gradient(ellipse 30% 20% at 28% 14%, rgba(60, 200, 220, .12), transparent),
+        radial-gradient(ellipse 35% 18% at 85% 40%, rgba(255, 120, 200, .10), transparent);
+    animation: aurora 14s ease-in-out infinite alternate;
+}
+
+/* névoa derivando sobre o mar */
+.nevoa {
+    left: 38%;
+    top: 68%;
+    width: 80%;
+    height: 24%;
+    pointer-events: none;
+    filter: blur(8px);
+    background:
+        radial-gradient(ellipse 18% 40% at 20% 50%, rgba(150, 130, 220, .16), transparent),
+        radial-gradient(ellipse 22% 35% at 60% 40%, rgba(120, 150, 230, .12), transparent),
+        radial-gradient(ellipse 16% 45% at 90% 60%, rgba(150, 130, 220, .14), transparent);
+    animation: derivar 38s ease-in-out infinite alternate;
+}
+
+.nevoa.n2 {
+    top: 76%;
+    opacity: .7;
+    animation-duration: 52s;
+    animation-direction: alternate-reverse;
 }
 
 /* brilho pulsando no notebook */
@@ -110,6 +153,38 @@ body.carregando { overflow: hidden; }
     pointer-events: none;
 }
 
+/* brilhos na água e reflexo das luzes da vila */
+.cintila {
+    width: max(2px, .3%);
+    aspect-ratio: 1;
+    background: #bcd4ff;
+    opacity: 0;
+    animation: cintila var(--t) var(--d) steps(1) infinite;
+}
+
+.cintila.q { background: #ffb347; }
+
+/* vaga-lumes na colina */
+.vagalume {
+    width: max(3px, .4%);
+    aspect-ratio: 1;
+    border-radius: 50%;
+    background: #d9ff7a;
+    box-shadow: 0 0 8px 2px rgba(200, 255, 100, .7);
+    animation: vagar var(--t) var(--d) ease-in-out infinite alternate;
+}
+
+/* estrela cadente */
+.meteoro {
+    width: 110px;
+    height: 2px;
+    transform-origin: 0 50%;
+    opacity: 0;
+    background: linear-gradient(90deg, transparent, #fff 90%);
+    box-shadow: 0 0 8px #cbb8ff;
+    animation: meteoro 1s ease-in forwards;
+}
+
 /* vinheta + linhas de CRT para dar leitura ao texto */
 .vinheta {
     position: absolute;
@@ -129,6 +204,7 @@ body.carregando { overflow: hidden; }
 /* ---------- LOADING / PRESS START ---------- */
 
 .loader {
+    --p: 0%;
     position: fixed;
     inset: 0;
     z-index: 50;
@@ -150,11 +226,11 @@ body.carregando { overflow: hidden; }
 
 .loader-caixa {
     position: relative;
-    width: min(92%, 520px);
+    width: min(92%, 560px);
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 18px;
+    gap: 16px;
     padding: 20px;
     text-align: center;
 }
@@ -168,24 +244,79 @@ body.carregando { overflow: hidden; }
 
 .loader-logo span { display: block; }
 .loader-logo .l1 { color: #fff; text-shadow: 3px 3px 0 #3b2a85, 0 0 18px rgba(255, 255, 255, .3); }
-.loader-logo .l2 { color: #b58aff; text-shadow: 3px 3px 0 #3b2a85, 0 0 22px rgba(172, 130, 255, .6); }
-
-/* trilha: o herói caminha até a estrela enquanto carrega */
-.loader-trilha {
-    position: relative;
-    width: 100%;
-    padding-top: 46px;
-    margin-top: 6px;
-    --p: 0%;
+.loader-logo .l2 {
+    color: #b58aff;
+    text-shadow: 3px 3px 0 #3b2a85, 0 0 22px rgba(172, 130, 255, .6);
+    animation: glitch 3.2s infinite steps(1);
 }
 
+/* palco: o mundo rola em parallax enquanto o herói caminha até o cristal */
+.palco {
+    position: relative;
+    width: 100%;
+    height: 190px;
+    overflow: hidden;
+    border: 3px solid #3b2a85;
+    background: linear-gradient(#070a22, #1a1456 70%, #3a2a8a);
+    box-shadow: 0 0 0 3px #0a0f2c, 0 0 30px rgba(120, 85, 232, .35);
+}
+
+.p-lua {
+    position: absolute;
+    right: 18%;
+    top: 22px;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: #f4eeff;
+    box-shadow: 0 0 22px 6px rgba(196, 165, 255, .55), inset -6px -3px 0 #cfc2f2;
+}
+
+.p-camada {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-repeat: repeat-x;
+    background-position: 0 100%;
+    image-rendering: pixelated;
+    animation: rolar var(--v) linear infinite;
+}
+
+.p-m1 {
+    height: 80px; --v: 48s; --w: 320px; background-size: 320px 80px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 160 40' shape-rendering='crispEdges'%3E%3Cpath d='M0 40V28H10V22H20V14H30V8H40V14H50V22H60V18H70V26H80V18H90V24H100V30H110V22H120V16H130V24H140V30H150V28H160V40Z' fill='%2314194a'/%3E%3C/svg%3E");
+}
+
+.p-m2 {
+    height: 60px; bottom: 20px; --v: 24s; --w: 240px; background-size: 240px 60px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 30' shape-rendering='crispEdges'%3E%3Cpath d='M0 30V20H10V14H20V8H30V14H40V20H50V12H60V6H70V12H80V18H90V10H100V16H110V20H120V30Z' fill='%231d1f63'/%3E%3C/svg%3E");
+}
+
+.p-pinhos {
+    height: 56px; bottom: 26px; --v: 6s; --w: 160px; background-size: 160px 56px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 80 28' shape-rendering='crispEdges' fill='%230b1236'%3E%3Crect x='19' y='6' width='2' height='4'/%3E%3Crect x='17' y='10' width='6' height='4'/%3E%3Crect x='15' y='14' width='10' height='4'/%3E%3Crect x='13' y='18' width='14' height='4'/%3E%3Crect x='19' y='22' width='2' height='6'/%3E%3Crect x='57' y='12' width='2' height='3'/%3E%3Crect x='55' y='15' width='6' height='3'/%3E%3Crect x='53' y='18' width='10' height='3'/%3E%3Crect x='57' y='21' width='2' height='7'/%3E%3C/svg%3E");
+}
+
+.p-chao {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 28px;
+    background:
+        repeating-linear-gradient(90deg, transparent 0 28px, rgba(0, 0, 0, .3) 28px 32px),
+        linear-gradient(#8f66f0 0 4px, #4a35a8 4px 8px, #1b1450 8px);
+    animation: rolarChao .5s steps(8) infinite;
+}
+
+/* herói (fixo no palco: quem se move é o cenário) */
 .heroi {
     position: absolute;
-    left: var(--p);
-    top: 6px;
-    width: 30px;
-    height: 36px;
-    transform: translateX(-50%);
+    left: 24%;
+    bottom: 24px;
+    width: 36px;
+    height: 43px;
     filter: drop-shadow(0 0 6px rgba(255, 200, 90, .5));
     animation: bob .36s steps(1) infinite;
 }
@@ -196,15 +327,43 @@ body.carregando { overflow: hidden; }
 .heroi.chegou, .heroi.chegou .pa, .heroi.chegou .pb { animation: none; }
 .heroi.chegou .pa { opacity: 1; }
 
-.meta {
+/* Cristal do Conhecimento: cresce e brilha conforme o progresso (--n de 0 a 1) */
+.cristal {
     position: absolute;
-    right: 0;
-    top: 12px;
-    color: #ffd36b;
-    font-size: 22px;
-    text-shadow: 0 0 14px rgba(255, 185, 0, .8);
-    animation: pulsar-estrela 1.6s ease-in-out infinite;
+    right: 12%;
+    bottom: 26px;
+    width: 36px;
+    height: 48px;
+    transform-origin: 50% 100%;
+    transform: scale(calc(.5 + var(--n) * .5));
+    filter: drop-shadow(0 0 calc(3px + var(--n) * 16px) rgba(181, 138, 255, .95));
+    animation: flut 2s ease-in-out infinite;
 }
+
+.cristal svg { width: 100%; height: 100%; display: block; }
+
+.cristal::before {
+    content: "";
+    position: absolute;
+    inset: -30px;
+    z-index: -1;
+    background: radial-gradient(circle, rgba(181, 138, 255, .55), transparent 65%);
+    opacity: var(--n);
+}
+
+/* barra de XP */
+.xp {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    font-family: 'Press Start 2P', monospace;
+    font-size: 10px;
+    color: #c4a5ff;
+}
+
+.xp .barra { flex: 1; }
+.lv b { color: #ffd36b; font-weight: 400; }
 
 .barra {
     height: 22px;
@@ -214,6 +373,8 @@ body.carregando { overflow: hidden; }
 }
 
 .barra b {
+    position: relative;
+    overflow: hidden;
     display: block;
     height: 100%;
     width: var(--p);
@@ -221,7 +382,18 @@ body.carregando { overflow: hidden; }
     box-shadow: 0 0 12px rgba(172, 130, 255, .6);
 }
 
+.barra b::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(100deg, transparent 30%, rgba(255, 255, 255, .5) 50%, transparent 70%);
+    transform: translateX(-100%);
+    animation: brilhoBarra 1.2s linear infinite;
+}
+
 .pct {
+    min-width: 4.5ch;
+    text-align: right;
     font-family: 'Press Start 2P', monospace;
     font-size: 11px;
     color: #c4a5ff;
@@ -266,6 +438,11 @@ body.carregando { overflow: hidden; }
 }
 
 .press-start:hover { background: #a77bff; color: #080817; }
+
+/* chegou ao cristal: o mundo para e o palco dá um flash */
+.loader.chegou .p-camada,
+.loader.chegou .p-chao { animation-play-state: paused; }
+.loader.chegou .palco { animation: flashPalco .7s steps(5); }
 
 /* saída: dissolve em quadradinhos revelando a cena */
 .loader.saindo { pointer-events: none; background: transparent; }
@@ -455,10 +632,19 @@ body.pagina-intro.saindo-pagina::after { animation: escurecer .45s steps(6) forw
 
 /* ---------- ANIMAÇÕES ---------- */
 
+@keyframes zoomOut { from { --z: 1.22; } to { --z: 1.05; } }
+
 @keyframes respirar {
     0%, 100% { transform: scale(1, 1); }
     50%      { transform: scale(1.004, 1.014); }
 }
+
+@keyframes aurora {
+    from { opacity: .4; transform: translateX(-3%); }
+    to   { opacity: 1;  transform: translateX(3%) scale(1.05); }
+}
+
+@keyframes derivar { from { transform: translateX(-12%); } to { transform: translateX(12%); } }
 
 @keyframes pulsar {
     0%, 100% { opacity: .45; transform: translate(-50%, -50%) scale(.85); }
@@ -471,14 +657,43 @@ body.pagina-intro.saindo-pagina::after { animation: escurecer .45s steps(6) forw
     100% { opacity: 0; transform: translate(var(--dx), -70px); }
 }
 
+@keyframes cintila { 0%, 100% { opacity: 0; } 50% { opacity: .85; } }
+
+@keyframes vagar {
+    from { transform: translate(0, 0); opacity: .2; }
+    50%  { opacity: 1; }
+    to   { transform: translate(var(--dx), var(--dy)); opacity: .3; }
+}
+
+@keyframes meteoro {
+    0%   { opacity: 0; transform: rotate(24deg) translateX(0); }
+    10%  { opacity: 1; }
+    100% { opacity: 0; transform: rotate(24deg) translateX(520px); }
+}
+
+@keyframes rolar     { to { background-position-x: calc(var(--w) * -1); } }
+@keyframes rolarChao { from { background-position-x: 0, 0; } to { background-position-x: -32px, 0; } }
+@keyframes bob       { 50% { transform: translateY(-2px); } }
+@keyframes flut      { 50% { translate: 0 -5px; } }
+@keyframes brilhoBarra { to { transform: translateX(100%); } }
+
+@keyframes flashPalco {
+    0%   { box-shadow: 0 0 0 3px #0a0f2c, 0 0 70px 24px #c4a5ff; }
+    100% { box-shadow: 0 0 0 3px #0a0f2c, 0 0 30px rgba(120, 85, 232, .35); }
+}
+
+@keyframes glitch {
+    0%, 91%, 100% { transform: none; text-shadow: 3px 3px 0 #3b2a85, 0 0 22px rgba(172, 130, 255, .6); }
+    93% { transform: translateX(-3px); text-shadow: 3px 0 #ff4d8d, -3px 0 #4de1ff; }
+    96% { transform: translateX(3px);  text-shadow: -3px 0 #ff4d8d, 3px 0 #4de1ff; }
+}
+
 @keyframes piscar { 50% { opacity: 0; } }
 @keyframes cintilar { 50% { opacity: 1; } }
 @keyframes flutuar { 50% { transform: translateY(-5px); } }
 @keyframes luz { 0%, 100% { opacity: 1; } 40% { opacity: .35; } 70% { opacity: .8; } }
 @keyframes passoA { 50% { opacity: 0; } }
 @keyframes passoB { 50% { opacity: 1; } }
-@keyframes bob { 50% { transform: translateX(-50%) translateY(-2px); } }
-@keyframes pulsar-estrela { 50% { transform: scale(1.25); opacity: .7; } }
 @keyframes sumirCelula { to { opacity: 0; } }
 
 @keyframes pixelIn {
@@ -491,7 +706,6 @@ body.pagina-intro.saindo-pagina::after { animation: escurecer .45s steps(6) forw
 }
 
 @keyframes tracar   { from { opacity: 1; transform: scaleX(0); } to { opacity: 1; transform: scaleX(1); } }
-@keyframes saida    { to { opacity: 0; } }
 @keyframes escurecer { to { opacity: 1; } }
 
 @keyframes pulsoBorda {
@@ -504,6 +718,8 @@ body.pagina-intro.saindo-pagina::after { animation: escurecer .45s steps(6) forw
 @media (max-width: 600px) {
     .botao-som { top: 10px; right: 10px; font-size: 10px; padding: 8px 10px; }
     .tela-inicial .subtitulo { font-size: 10px; letter-spacing: 2px; }
+    .palco { height: 160px; }
+    .xp { font-size: 8px; gap: 8px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -513,7 +729,113 @@ body.pagina-intro.saindo-pagina::after { animation: escurecer .45s steps(6) forw
     .tela-inicial .pixel, .tela-inicial .quest, .tela-inicial .botao-start,
     .tela-inicial .indicacao, .botao-som { opacity: 1; }
 
-    .fagulha { display: none; }
+    .fagulha, .meteoro, .vagalume { display: none; }
+}
+
+/* =====================================================
+   TELA ÚNICA: carregamento = travessia sobre a própria cena
+   COLE NO FINAL DO style.css e APAGUE o bloco anterior do carregamento
+   (.lc-marca, .lc-meio, .lc-rodape, o filtro do .cena etc.).
+   Regras antigas de .loader-caixa/.palco/.xp/.cristal também podem sair.
+===================================================== */
+
+[hidden] { display: none !important; }
+
+/* camada da travessia (canvas pequeno ampliado em pixel, no mesmo quadro da imagem) */
+#ponte {
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    image-rendering: pixelated;
+    pointer-events: none;
+}
+
+/* porcentagem que acompanha o herói pela ponte */
+.quadro .pct {
+    min-width: 0;
+    transform: translate(-50%, -100%);
+    font-family: 'Press Start 2P', monospace;
+    font-size: clamp(8px, 1.1vw, 12px);
+    color: #fff;
+    text-shadow: 2px 2px 0 #2a1f6b;
+    white-space: nowrap;
+    pointer-events: none;
+    transition: opacity .4s;
+}
+
+.comecou .quadro .pct { opacity: 0; }
+
+/* luzes da vila só aparecem quando "acendem" */
+.luz:not(.acesa) { visibility: hidden; }
+
+/* o loader agora é só a legenda embaixo; a cena fica toda à mostra */
+.loader {
+    display: block;
+    background: none;
+    pointer-events: none;
+    transition: opacity .5s steps(5);
+}
+
+.loader.saindo { opacity: 0; }
+
+.lc-base {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 0 20px max(22px, env(safe-area-inset-bottom));
+    text-align: center;
+    font-family: 'Roboto Mono', monospace;
+    font-size: 10px;
+    letter-spacing: .14em;
+    color: #d8cfee;
+    text-shadow: 0 1px 0 #000, 0 0 8px rgba(0, 0, 0, .9);
+}
+
+.lc-legenda { margin: 0; text-transform: uppercase; }
+.lc-legenda #legenda::after { content: "..."; }
+.loader.chegou .lc-legenda #legenda::after { content: ""; }
+.lc-etapa { color: #9a90b8; margin-right: 10px; }
+.lc-etapa b { color: #ffd36b; font-weight: 400; }
+
+.dica {
+    min-height: 1.6em;
+    margin: 0;
+    color: #bdb3d8;
+}
+
+/* PRESS START: aparece abaixo do título quando a travessia termina */
+.slot-start {
+    min-height: 44px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.tela-inicial .frase { margin: 6px 0 30px; }
+
+.press-start {
+    padding: 8px 14px;
+    border: 0;
+    background: none;
+    color: #fff;
+    font-family: 'Press Start 2P', monospace;
+    font-size: clamp(11px, 2.6vw, 14px);
+    letter-spacing: .1em;
+    text-shadow: 2px 2px 0 #2a1f6b;
+    cursor: pointer;
+}
+
+.press-start::before { content: "\25B6\00a0"; color: #ffd36b; }
+.press-start:hover { background: none; color: #ffd36b; }
+
+@media (max-width: 600px) {
+    .lc-base { font-size: 9px; }
 }
 
 
