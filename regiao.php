@@ -69,8 +69,10 @@ function estado_aula(array $a): string
 }
 
 const ROTULO_AULA = [
-    "feita" => "Concluída", "andamento" => "Em andamento",
-    "nova" => "Nova", "vazia" => "Sem exercícios",
+    "feita" => "Concluída",
+    "andamento" => "Em andamento",
+    "nova" => "Nova",
+    "vazia" => "Sem exercícios",
 ];
 
 /* ---------- Dados (mesmas consultas e regra de desbloqueio de regioes.php) ---------- */
@@ -92,8 +94,10 @@ $st->execute([$uid]);
 $aulas = [];
 foreach ($st->fetchAll() as $a) {
     $aulas[$a["regiao_id"]][] = [
-        "id" => (int) $a["id"], "titulo" => $a["titulo"],
-        "total" => (int) $a["total"], "feitos" => (int) $a["feitos"],
+        "id" => (int) $a["id"],
+        "titulo" => $a["titulo"],
+        "total" => (int) $a["total"],
+        "feitos" => (int) $a["feitos"],
     ];
 }
 
@@ -108,13 +112,18 @@ foreach ($lista as $r) {
     $feitos = array_sum(array_column($as, "feitos"));
 
     $bloqueada = !$anterior_ok;
-    $completa = !$bloqueada && $feitos >= $total;   // 0 de 0 conta como concluída
+    $completa = !$bloqueada && $total > 0 && $feitos >= $total;
 
     $infos[] = [
-        "id" => $rid, "nome" => $r["nome"], "descricao" => $r["descricao"] ?? "",
+        "id" => $rid,
+        "nome" => $r["nome"],
+        "descricao" => $r["descricao"] ?? "",
         "tema" => tema_da_regiao($r["nome"], (int) $r["ordem"]),
-        "aulas" => $as, "total" => $total, "feitos" => $feitos,
-        "bloqueada" => $bloqueada, "completa" => $completa,
+        "aulas" => $as,
+        "total" => $total,
+        "feitos" => $feitos,
+        "bloqueada" => $bloqueada,
+        "completa" => $completa,
     ];
 
     $anterior_ok = $completa;
@@ -122,7 +131,10 @@ foreach ($lista as $r) {
 
 $pos = null;
 foreach ($infos as $i => $inf) {
-    if ($inf["id"] === $id) { $pos = $i; break; }
+    if ($inf["id"] === $id) {
+        $pos = $i;
+        break;
+    }
 }
 
 // Região inexistente, inativa ou bloqueada: não deixa entrar digitando a URL
@@ -166,11 +178,17 @@ $imagem = imagem_do_tema($tema);
 // Próxima aula a fazer: a primeira com exercícios pendentes (ou a primeira sem exercícios)
 $proxima_aula = null;
 foreach ($regiao["aulas"] as $a) {
-    if ($a["total"] > 0 && $a["feitos"] < $a["total"]) { $proxima_aula = $a; break; }
+    if ($a["total"] > 0 && $a["feitos"] < $a["total"]) {
+        $proxima_aula = $a;
+        break;
+    }
 }
 if (!$proxima_aula) {
     foreach ($regiao["aulas"] as $a) {
-        if ($a["total"] === 0) { $proxima_aula = $a; break; }
+        if ($a["total"] === 0) {
+            $proxima_aula = $a;
+            break;
+        }
     }
 }
 $total_aulas = count($regiao["aulas"]);
@@ -191,8 +209,8 @@ $aulas_feitas = count(array_filter($regiao["aulas"], fn($a) => estado_aula($a) =
 </head>
 
 <body class="pagina-dashboard pagina-regiao"
-      data-tema="<?= e($tema) ?>"
-      style="--c1: <?= e($cor1) ?>; --c2: <?= e($cor2) ?>;">
+    data-tema="<?= e($tema) ?>"
+    style="--c1: <?= e($cor1) ?>; --c2: <?= e($cor2) ?>;">
 
     <header class="cabecalho-dashboard">
 
@@ -211,7 +229,7 @@ $aulas_feitas = count(array_filter($regiao["aulas"], fn($a) => estado_aula($a) =
         <!-- ============ HERO ============ -->
         <section class="reg-hero" aria-labelledby="reg-titulo">
             <div class="reg-hero-img"
-                 <?php if ($imagem): ?>style="background-image: url('<?= e($imagem) ?>')"<?php endif; ?>></div>
+                <?php if ($imagem): ?>style="background-image: url('<?= e($imagem) ?>')" <?php endif; ?>></div>
             <canvas class="reg-particulas" aria-hidden="true"></canvas>
 
             <div class="reg-hero-conteudo">
@@ -245,12 +263,12 @@ $aulas_feitas = count(array_filter($regiao["aulas"], fn($a) => estado_aula($a) =
                 <svg viewBox="0 0 120 120" role="img" aria-label="<?= $pct ?>% da região concluído">
                     <defs>
                         <linearGradient id="reg-grad" x1="0" y1="0" x2="1" y2="1">
-                            <stop offset="0" style="stop-color: var(--c1)"/>
-                            <stop offset="1" style="stop-color: var(--c2)"/>
+                            <stop offset="0" style="stop-color: var(--c1)" />
+                            <stop offset="1" style="stop-color: var(--c2)" />
                         </linearGradient>
                     </defs>
-                    <circle class="trilho" cx="60" cy="60" r="52"/>
-                    <circle class="valor" cx="60" cy="60" r="52" transform="rotate(-90 60 60)"/>
+                    <circle class="trilho" cx="60" cy="60" r="52" />
+                    <circle class="valor" cx="60" cy="60" r="52" transform="rotate(-90 60 60)" />
                 </svg>
                 <div class="reg-anel-texto">
                     <strong><?= $pct ?>%</strong>
@@ -308,7 +326,9 @@ $aulas_feitas = count(array_filter($regiao["aulas"], fn($a) => estado_aula($a) =
                                 </div>
                                 <?php if ($a["total"]): ?>
                                     <div class="reg-mini" role="progressbar" aria-valuemin="0" aria-valuemax="100"
-                                         aria-valuenow="<?= $pa ?>"><div style="width: <?= $pa ?>%"></div></div>
+                                        aria-valuenow="<?= $pa ?>">
+                                        <div style="width: <?= $pa ?>%"></div>
+                                    </div>
                                 <?php endif; ?>
                             </a>
                         </li>
@@ -327,9 +347,13 @@ $aulas_feitas = count(array_filter($regiao["aulas"], fn($a) => estado_aula($a) =
                     <h2 id="missao-titulo"><?= e($m["titulo"] ?: "Missão da região") ?></h2>
                     <p><?= e($missao_texto[$missao]) ?></p>
                 </div>
-                <span class="reg-chip <?= $missao === "feita" ? "feita" : ($missao === "aberta" ? "andamento" : "vazia") ?>">
-                    <?= $missao_rotulo[$missao] ?>
-                </span>
+                <?php if ($missao === "trancada"): ?>
+                    <span class="reg-chip vazia"><?= $missao_rotulo[$missao] ?></span>
+                <?php else: ?>
+                    <a class="reg-missao-botao" href="missao.php?id=<?= (int) $id ?>">
+                        <?= $missao === "feita" ? "Rever missão" : "Iniciar missão" ?>
+                    </a>
+                <?php endif; ?>
             </section>
         <?php endif; ?>
 
@@ -368,4 +392,5 @@ $aulas_feitas = count(array_filter($regiao["aulas"], fn($a) => estado_aula($a) =
 
     <script src="js/regiao.js?v=<?= versao_arquivo("js/regiao.js") ?>" defer></script>
 </body>
+
 </html>

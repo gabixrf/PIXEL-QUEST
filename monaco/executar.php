@@ -16,11 +16,28 @@ $uid = (int)$_SESSION["usuario_id"];
 if (!hash_equals($_SESSION["csrf_aluno"] ?? "", (string)($dados["csrf"] ?? ""))) responder(["mensagem" => "Sessão expirada. Atualize a página."], 403);
 if (!is_string($codigo) || trim($codigo) === "") responder(["mensagem" => "Digite um código Python."], 400);
 if (strlen($codigo) > 10000) responder(["mensagem" => "Código muito grande."], 400);
-if (!$exercicio_id) responder(["mensagem" => "Exercício inválido."], 400);
-$st = $conexao->prepare("SELECT e.id,e.saida_esperada,e.xp FROM exercicios e INNER JOIN aulas a ON a.id=e.aula_id WHERE e.id=? AND e.ativo=1 AND a.publicada=1");
-$st->execute([$exercicio_id]);
-$exercicio = $st->fetch();
-if (!$exercicio) responder(["mensagem" => "Este exercício não está disponível."], 404);
+$missao_id = (int)($dados["missao_id"] ?? 0);
+if (!$exercicio_id && !$missao_id) responder(["mensagem" => "Exercício inválido."], 400);
+if ($missao_id) {
+    // MISSÃO: só corrige se estiver liberada (mesma regra da tela missao.php)
+    require_once __DIR__ . "/../includes/missao_status.php";
+    $st = $conexao->prepare("SELECT regiao_id FROM missoes WHERE id=? AND ativa=1");
+    $st->execute([$missao_id]);
+    $regiao_da_missao = (int)$st->fetchColumn();
+    $info = $regiao_da_missao ? status_missao($conexao, $uid, $regiao_da_missao) : null;
+    if (!$info || !$info["missao"] || (int)$info["missao"]["id"] !== $missao_id) responder(["mensagem" => "Esta missão não está disponível."], 404);
+    if (!$info["liberada"]) responder(["mensagem" => "Esta missão ainda está trancada. Conclua as atividades da região primeiro."], 403);
+    if (trim((string)$info["missao"]["saida_esperada"]) === "") responder(["mensagem" => "Esta missão ainda está sendo preparada."], 404);
+    $exercicio = ["id" => $missao_id, "saida_esperada" => $info["missao"]["saida_esperada"], "xp" => $info["missao"]["xp"]];
+} else {
+    $st = $conexao->prepare("SELECT e.id,e.saida_esperada,e.xp FROM exercicios e INNER JOIN aulas a ON a.id=e.aula_id WHERE e.id=? AND e.ativo=1 AND a.publicada=1");
+    $st->execute([$exercicio_id]);
+    $exercicio = $st->fetch();
+    if (!$exercicio) responder(["mensagem" => "Este exercício não está disponível."], 404);
+}
+// coluna e id usados para gravar o progresso (missão ou exercício)
+$col = $missao_id ? "missao_id" : "exercicio_id";
+$alvo_id = $missao_id ?: $exercicio_id;
 $api = "https://ce.judge0.com";
 function requisicao_judge(string $url, string $metodo = "GET", ?array $corpo = null): array
 {
@@ -55,11 +72,11 @@ try {
     if ($correto) {
         $conexao->beginTransaction();
         try {
-            $st = $conexao->prepare("SELECT id,concluido FROM progresso WHERE usuario_id=? AND exercicio_id=? FOR UPDATE");
-            $st->execute([$uid, $exercicio_id]);
+            $st = $conexao->prepare("SELECT id,concluido FROM progresso WHERE usuario_id=? AND $col=? FOR UPDATE");
+            $st->execute([$uid, $alvo_id]);
             $p = $st->fetch();
             if (!$p) {
-                $conexao->prepare("INSERT INTO progresso (usuario_id,exercicio_id,concluido,tentativas,xp_concedido,concluido_em) VALUES (?,?,1,1,?,NOW())")->execute([$uid, $exercicio_id, (int)$exercicio["xp"]]);
+                $conexao->prepare("INSERT INTO progresso (usuario_id,$col,concluido,tentativas,xp_concedido,concluido_em) VALUES (?,?,1,1,?,NOW())")->execute([$uid, $alvo_id, (int)$exercicio["xp"]]);
                 $xpGanho = (int)$exercicio["xp"];
             } else {
                 $conexao->prepare("UPDATE progresso SET concluido=1,tentativas=tentativas+1,concluido_em=COALESCE(concluido_em,NOW()),xp_concedido=IF(xp_concedido=0,?,xp_concedido) WHERE id=?")->execute([(int)$exercicio["xp"], $p["id"]]);
@@ -74,10 +91,10 @@ try {
             throw $e;
         }
     } else {
-        $st = $conexao->prepare("INSERT INTO progresso (usuario_id,exercicio_id,concluido,tentativas,xp_concedido) VALUES (?,?,0,1,0) ON DUPLICATE KEY UPDATE tentativas=tentativas+1");
-        $st->execute([$uid, $exercicio_id]);
+        $st = $conexao->prepare("INSERT INTO progresso (usuario_id,$col,concluido,tentativas,xp_concedido) VALUES (?,?,0,1,0) ON DUPLICATE KEY UPDATE tentativas=tentativas+1");
+        $st->execute([$uid, $alvo_id]);
     }
-    responder(["correto" => $correto, "saida" => $saida, "mensagem" => $correto ? "Parabéns! Você concluiu o exercício." : "A saída ainda não corresponde ao esperado. Revise seu código e tente novamente.", "xp_ganho" => $xpGanho]);
+    responder(["correto" => $correto, "saida" => $saida, "mensagem" => $correto ? ($missao_id ? "Missão cumprida! Você restaurou esta região." : "Parabéns! Você concluiu o exercício.") : "A saída ainda não corresponde ao esperado. Revise seu código e tente novamente.", "xp_ganho" => $xpGanho]);
 } catch (Throwable $e) {
     error_log($e->getMessage());
     responder(["mensagem" => "Não foi possível executar o código agora. Tente novamente em instantes."], 502);

@@ -535,6 +535,29 @@
 
 .reg-missao p { color: #b8bfd3; font-size: 13px; line-height: 1.7; }
 
+/* botão que leva para missao.php */
+.reg-missao-botao {
+    flex: none;
+    padding: 12px 20px;
+    border: 2px solid var(--c1);
+    border-radius: 8px;
+    background: color-mix(in srgb, var(--c1) 16%, #0c1328);
+    color: #fff;
+    font-family: 'Press Start 2P', monospace;
+    font-size: 11px;
+    line-height: 1.5;
+    text-decoration: none;
+    transition: background .2s, color .2s, transform .2s;
+}
+
+.reg-missao-botao:hover,
+.reg-missao-botao:focus-visible {
+    background: var(--c1);
+    color: #080817;
+    transform: translateY(-2px);
+    outline: none;
+}
+
 .reg-missao.trancada {
     border-color: #26304d;
     background: linear-gradient(135deg, #10172b, #0a1022);

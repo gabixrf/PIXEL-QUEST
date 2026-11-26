@@ -25,64 +25,341 @@ a {
 
 
 /* ==============================
-   TELA INICIAL
+   TELA INICIAL  (substitui a seção antiga "TELA INICIAL" do style.css:
+   apague tudo de .tela-inicial até .indicacao e cole este bloco no lugar)
 ============================== */
 
+body.carregando { overflow: hidden; }
+
+/* ---------- CENA (fundo animado) ---------- */
+
+.cena {
+    position: fixed;
+    inset: 0;
+    overflow: hidden;
+    z-index: 0;
+}
+
+/* quadrado que imita o "background-size: cover" da imagem 1:1 */
+.quadro {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: max(100vw, 100vh);
+    aspect-ratio: 1;
+    transform: translate(calc(-50% + var(--px, 0px)), calc(-50% + var(--py, 0px))) scale(1.05);
+}
+
+.quadro > * { position: absolute; }
+
+.cena-img,
+.personagem,
+#estrelas {
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    image-rendering: pixelated;
+}
+
+/* personagem: cópia da imagem recortada por máscara, "respira" sobre o original */
+.personagem {
+    -webkit-mask-image: radial-gradient(ellipse 13% 17% at 26% 68%, #000 75%, transparent 100%);
+            mask-image: radial-gradient(ellipse 13% 17% at 26% 68%, #000 75%, transparent 100%);
+    transform-origin: 26% 81%;
+    animation: respirar 3.4s ease-in-out infinite;
+}
+
+/* brilho pulsando no notebook */
+.brilho {
+    left: 32.2%;
+    top: 64.6%;
+    width: 12%;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    background: radial-gradient(circle,
+        rgba(255, 214, 120, .85) 0,
+        rgba(255, 170, 50, .35) 30%,
+        transparent 68%);
+    mix-blend-mode: screen;
+    pointer-events: none;
+    transform: translate(-50%, -50%);
+    animation: pulsar 2.6s ease-in-out infinite;
+}
+
+/* faíscas subindo do notebook */
+.fagulha {
+    left: 32.5%;
+    top: 64%;
+    width: max(3px, .4%);
+    aspect-ratio: 1;
+    background: #ffd36b;
+    box-shadow: 0 0 6px #ffb900;
+    opacity: 0;
+    animation: subir 3.2s var(--d) ease-out infinite;
+}
+
+/* luzes da vila (posições aproximadas na ilha) */
+.luz {
+    width: max(3px, .45%);
+    aspect-ratio: 1;
+    background: #ffb347;
+    box-shadow: 0 0 8px 2px rgba(255, 170, 60, .7);
+    transform: translate(-50%, -50%);
+    animation: luz var(--t, 3s) var(--d, 0s) steps(1) infinite;
+    pointer-events: none;
+}
+
+/* vinheta + linhas de CRT para dar leitura ao texto */
+.vinheta {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background:
+        repeating-linear-gradient(0deg, rgba(0, 0, 0, .10) 0 1px, transparent 1px 3px),
+        radial-gradient(ellipse at 50% 45%, rgba(3, 5, 20, .5) 0, rgba(3, 5, 20, .15) 45%, transparent 70%),
+        radial-gradient(ellipse at center, transparent 55%, rgba(2, 3, 12, .65) 100%);
+}
+
+/* retrato (celular): mantém o personagem à vista */
+@media (max-aspect-ratio: 4/5) {
+    .quadro { left: calc(30vw + 24vh); }
+}
+
+/* ---------- LOADING / PRESS START ---------- */
+
+.loader {
+    position: fixed;
+    inset: 0;
+    z-index: 50;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    background: radial-gradient(ellipse at 50% 40%, #0d1235 0, #03050f 70%);
+}
+
+.loader-estrelas i {
+    position: absolute;
+    width: 3px;
+    height: 3px;
+    background: #fff;
+    opacity: .2;
+    animation: cintilar var(--t, 2.4s) var(--d, 0s) steps(4) infinite;
+}
+
+.loader-caixa {
+    position: relative;
+    width: min(92%, 520px);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 18px;
+    padding: 20px;
+    text-align: center;
+}
+
+.loader-logo {
+    font-family: 'Press Start 2P', monospace;
+    font-size: clamp(22px, 6vw, 34px);
+    line-height: 1.5;
+    animation: pixelIn 1s both;
+}
+
+.loader-logo span { display: block; }
+.loader-logo .l1 { color: #fff; text-shadow: 3px 3px 0 #3b2a85, 0 0 18px rgba(255, 255, 255, .3); }
+.loader-logo .l2 { color: #b58aff; text-shadow: 3px 3px 0 #3b2a85, 0 0 22px rgba(172, 130, 255, .6); }
+
+/* trilha: o herói caminha até a estrela enquanto carrega */
+.loader-trilha {
+    position: relative;
+    width: 100%;
+    padding-top: 46px;
+    margin-top: 6px;
+    --p: 0%;
+}
+
+.heroi {
+    position: absolute;
+    left: var(--p);
+    top: 6px;
+    width: 30px;
+    height: 36px;
+    transform: translateX(-50%);
+    filter: drop-shadow(0 0 6px rgba(255, 200, 90, .5));
+    animation: bob .36s steps(1) infinite;
+}
+
+.heroi .pb { opacity: 0; }
+.heroi .pa { animation: passoA .36s steps(1) infinite; }
+.heroi .pb { animation: passoB .36s steps(1) infinite; }
+.heroi.chegou, .heroi.chegou .pa, .heroi.chegou .pb { animation: none; }
+.heroi.chegou .pa { opacity: 1; }
+
+.meta {
+    position: absolute;
+    right: 0;
+    top: 12px;
+    color: #ffd36b;
+    font-size: 22px;
+    text-shadow: 0 0 14px rgba(255, 185, 0, .8);
+    animation: pulsar-estrela 1.6s ease-in-out infinite;
+}
+
+.barra {
+    height: 22px;
+    padding: 3px;
+    border: 2px solid #3b2a85;
+    background: #0a0f2c;
+}
+
+.barra b {
+    display: block;
+    height: 100%;
+    width: var(--p);
+    background: repeating-linear-gradient(90deg, #b58aff 0 10px, #7855e8 10px 13px);
+    box-shadow: 0 0 12px rgba(172, 130, 255, .6);
+}
+
+.pct {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 11px;
+    color: #c4a5ff;
+}
+
+/* mini terminal com as mensagens de carregamento */
+.terminal {
+    width: 100%;
+    min-height: 106px;
+    padding: 12px 14px;
+    text-align: left;
+    font-size: 11px;
+    line-height: 1.9;
+    color: #aaa0c0;
+    border: 1px solid #2a3170;
+    background: rgba(5, 8, 23, .7);
+}
+
+.terminal p { animation: pixelIn .4s both; }
+.terminal span { color: #c4a5ff; }
+.terminal b { color: #4ade80; font-weight: 600; }
+
+.dica {
+    min-height: 2.6em;
+    color: #8f86a8;
+    font-size: 10px;
+    letter-spacing: 1px;
+    line-height: 1.6;
+}
+
+.slot-start { min-height: 56px; }
+
+.press-start {
+    padding: 16px 22px;
+    background: transparent;
+    border: 2px solid #b58aff;
+    color: #fff;
+    font-family: 'Press Start 2P', monospace;
+    font-size: 12px;
+    cursor: pointer;
+    animation: piscar 1s steps(1) infinite;
+}
+
+.press-start:hover { background: #a77bff; color: #080817; }
+
+/* saída: dissolve em quadradinhos revelando a cena */
+.loader.saindo { pointer-events: none; background: transparent; }
+
+.loader.saindo .loader-caixa,
+.loader.saindo .loader-estrelas {
+    opacity: 0;
+    transition: opacity .2s steps(2);
+}
+
+.pixels-saida {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    grid-template-columns: repeat(16, 1fr);
+    grid-template-rows: repeat(9, 1fr);
+}
+
+.pixels-saida i {
+    background: #03050f;
+    animation: sumirCelula .35s var(--d) steps(3) forwards;
+}
+
+/* ---------- BOTÃO DE SOM ---------- */
+
+.botao-som {
+    position: fixed;
+    top: 18px;
+    right: 18px;
+    z-index: 20;
+    padding: 10px 14px;
+    color: #d5c9eb;
+    background: rgba(10, 10, 35, .6);
+    border: 1px solid #8c70bb;
+    font-family: 'Roboto Mono', monospace;
+    font-size: 11px;
+    cursor: pointer;
+    opacity: 0;
+    transition: background-color .3s, border-color .3s, color .3s;
+}
+
+.entrou .botao-som { animation: pixelIn .6s 2s both; }
+
+.botao-som:hover {
+    color: #fff;
+    background: rgba(145, 105, 220, .35);
+    border-color: #c4a5ff;
+}
+
+/* ---------- CONTEÚDO ---------- */
+
 .tela-inicial {
+    position: relative;
+    z-index: 5;
     width: 100%;
     min-height: 100vh;
-
     display: flex;
     justify-content: center;
     align-items: center;
-
-    background-image:
-        linear-gradient(
-            rgba(3, 5, 20, 0.25),
-            rgba(3, 5, 20, 0.35)
-        ),
-        url('../imagens/intro-scene.png');
-
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
 }
 
 .conteudo-inicial {
     width: 90%;
     max-width: 850px;
-
+    padding: 30px;
     display: flex;
     flex-direction: column;
     align-items: center;
     text-align: center;
-
-    padding: 30px;
 }
 
-.simbolo-topo {
+.tela-inicial .simbolo-topo,
+.tela-inicial .linha-decorativa,
+.tela-inicial .subtitulo,
+.tela-inicial .pixel,
+.tela-inicial .quest,
+.tela-inicial .botao-start,
+.tela-inicial .indicacao { opacity: 0; }
+
+.tela-inicial .simbolo-topo {
     color: #c4a5ff;
     font-size: 35px;
     margin-bottom: 15px;
-
-    text-shadow: 0 0 18px rgba(172, 130, 255, 0.8);
+    text-shadow: 0 0 18px rgba(172, 130, 255, .8);
 }
 
-.linha-decorativa {
+.tela-inicial .linha-decorativa {
     width: 100px;
     height: 2px;
-
-    background: linear-gradient(
-        to right,
-        transparent,
-        #a77bff,
-        transparent
-    );
-
     margin: 15px auto 25px;
+    background: linear-gradient(to right, transparent, #a77bff, transparent);
 }
 
-.subtitulo {
+.tela-inicial .subtitulo {
     color: #d0c5e8;
     font-size: 12px;
     letter-spacing: 3px;
@@ -93,206 +370,150 @@ a {
     display: flex;
     flex-direction: column;
     gap: 12px;
-
     font-family: 'Press Start 2P', monospace;
     font-size: clamp(30px, 6vw, 55px);
     line-height: 1.4;
 }
 
-.pixel {
-    color: #ffffff;
-    text-shadow: 0 0 15px rgba(255, 255, 255, 0.3);
-}
-
-.quest {
-    color: #b58aff;
-    text-shadow: 0 0 20px rgba(172, 130, 255, 0.6);
-}
+.pixel { color: #fff; text-shadow: 4px 4px 0 #3b2a85, 0 0 15px rgba(255, 255, 255, .3); }
+.quest { color: #b58aff; text-shadow: 4px 4px 0 #3b2a85, 0 0 20px rgba(172, 130, 255, .6); }
 
 .frase {
+    min-height: 1.8em;
+    margin: 25px 0 35px;
     color: #e0d9ed;
     font-size: 15px;
-    margin-top: 25px;
-    margin-bottom: 35px;
+}
+
+/* cursor de digitação */
+.frase.digitando::after {
+    content: "";
+    display: inline-block;
+    width: .6em;
+    height: 1em;
+    margin-left: 4px;
+    vertical-align: -2px;
+    background: #c4a5ff;
+    animation: piscar 1s steps(1) infinite;
 }
 
 .botao-start {
-    color: #ffffff;
+    padding: 18px 30px;
+    color: #fff;
     font-family: 'Press Start 2P', monospace;
     font-size: 12px;
-
-    padding: 18px 30px;
-
     border: 2px solid #b58aff;
-    background-color: rgba(10, 10, 35, 0.65);
-
-    transition: 0.3s;
+    background: rgba(10, 10, 35, .65);
+    transition: background-color .3s, color .3s, box-shadow .3s, transform .3s;
 }
 
-.botao-start:hover {
-    background-color: #a77bff;
-    color: #080817;
+.botao-start:not(.mostrar) { pointer-events: none; }
 
-    box-shadow: 0 0 25px rgba(172, 130, 255, 0.7);
+.botao-start:hover,
+.botao-start:focus-visible {
+    background: #a77bff;
+    color: #080817;
+    box-shadow: 0 0 25px rgba(172, 130, 255, .7);
     transform: scale(1.05);
+    outline: none;
 }
 
 .indicacao {
+    margin-top: 45px;
     color: #aaa0c0;
     font-size: 10px;
     letter-spacing: 2px;
-    margin-top: 45px;
 }
 
+/* ---------- ENTRADA ORQUESTRADA (após o Press Start) ---------- */
 
-/* ==============================
-   TELA DA HISTÓRIA
-============================== */
+.entrou .simbolo-topo     { animation: pixelIn .6s .2s both; }
+.entrou .linha-decorativa { animation: tracar .6s .5s steps(6) both; }
+.entrou .subtitulo        { animation: pixelIn .8s .9s both; }
+.entrou .pixel            { animation: pixelIn .9s 1.3s both; }
+.entrou .quest            { animation: pixelIn .9s 1.7s both; }
+.entrou .titulo-principal { animation: flutuar 4s 2.8s ease-in-out infinite; }
 
-.tela-historia {
-    width: 100%;
-    height: 100vh;
-
-    display: flex;
-    justify-content: center;
-    align-items: center;
-
-    position: relative;
-
-    background-image:
-        linear-gradient(
-            rgba(5, 8, 23, 0.55),
-            rgba(5, 8, 23, 0.65)
-        ),
-        url('../imagens/teste-intro-estavel.gif');
-
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
+.botao-start.mostrar {
+    animation: pixelIn .7s both, pulsoBorda 2.2s .8s ease-in-out infinite;
 }
 
-.conteudo-historia {
-    width: 85%;
-    max-width: 850px;
+.indicacao.mostrar { animation: pixelIn .8s .3s both; }
 
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-}
-
-.pular-historia {
-    position: absolute;
-    top: 35px;
-    right: 45px;
-
-    padding: 12px 18px;
-
-    color: #d5c9eb;
-    background: rgba(10, 10, 35, 0.6);
-
-    border: 1px solid #8c70bb;
-
-    font-family: 'Roboto Mono', monospace;
-    font-size: 11px;
-
-    cursor: pointer;
-    transition: 0.3s;
-}
-
-.pular-historia:hover {
-    color: #ffffff;
-    background-color: rgba(145, 105, 220, 0.35);
-    border-color: #c4a5ff;
-}
-
-.identificacao {
-    color: #c4a5ff;
-    font-size: 12px;
-    letter-spacing: 3px;
-    margin-bottom: 5px;
-}
-
-.titulo-historia {
-    color: #ffffff;
-    font-family: 'Press Start 2P', monospace;
-    font-size: clamp(17px, 3vw, 25px);
-    text-align: center;
-    line-height: 1.8;
-    margin-bottom: 15px;
-
-    text-shadow: 0 0 15px rgba(172, 130, 255, 0.5);
-}
-
-.subtitulo-historia {
-    color: #c8bfd8;
-    font-size: 14px;
-    text-align: center;
-    margin-bottom: 25px;
-}
-
-#textoHistoria {
-    min-height: 100px;
-    max-width: 750px;
-
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    color: #ffffff;
-    font-family: 'Roboto Mono', monospace;
-    font-size: 18px;
-    line-height: 1.8;
-
+/* transição ao clicar em START */
+body.pagina-intro::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    background: #03050f;
     opacity: 0;
-    transition: opacity 0.7s ease;
+    pointer-events: none;
 }
 
-#textoHistoria.visivel {
-    opacity: 1;
+body.pagina-intro.saindo-pagina::after { animation: escurecer .45s steps(6) forwards; }
+
+/* ---------- ANIMAÇÕES ---------- */
+
+@keyframes respirar {
+    0%, 100% { transform: scale(1, 1); }
+    50%      { transform: scale(1.004, 1.014); }
 }
 
-.indicador {
-    display: flex;
-    gap: 8px;
-    margin-top: 25px;
+@keyframes pulsar {
+    0%, 100% { opacity: .45; transform: translate(-50%, -50%) scale(.85); }
+    50%      { opacity: 1;   transform: translate(-50%, -50%) scale(1.15); }
 }
 
-.indicador span {
-    width: 7px;
-    height: 7px;
-
-    border-radius: 50%;
-    background-color: #a77bff;
-
-    box-shadow: 0 0 10px rgba(172, 130, 255, 0.7);
+@keyframes subir {
+    0%   { opacity: 0; transform: translate(0, 0); }
+    15%  { opacity: 1; }
+    100% { opacity: 0; transform: translate(var(--dx), -70px); }
 }
 
-.botao-iniciar {
-    display: none;
+@keyframes piscar { 50% { opacity: 0; } }
+@keyframes cintilar { 50% { opacity: 1; } }
+@keyframes flutuar { 50% { transform: translateY(-5px); } }
+@keyframes luz { 0%, 100% { opacity: 1; } 40% { opacity: .35; } 70% { opacity: .8; } }
+@keyframes passoA { 50% { opacity: 0; } }
+@keyframes passoB { 50% { opacity: 1; } }
+@keyframes bob { 50% { transform: translateX(-50%) translateY(-2px); } }
+@keyframes pulsar-estrela { 50% { transform: scale(1.25); opacity: .7; } }
+@keyframes sumirCelula { to { opacity: 0; } }
 
-    color: #ffffff;
-    font-family: 'Press Start 2P', monospace;
-    font-size: 11px;
-
-    padding: 18px 25px;
-    margin-top: 30px;
-
-    border: 2px solid #a77bff;
-    background-color: rgba(10, 10, 35, 0.7);
-
-    transition: 0.3s;
+@keyframes pixelIn {
+    0%   { opacity: 0; }
+    25%  { opacity: 1; }
+    35%  { opacity: .2; }
+    55%  { opacity: 1; }
+    70%  { opacity: .5; }
+    100% { opacity: 1; }
 }
 
-.botao-iniciar.mostrar {
-    display: inline-block;
+@keyframes tracar   { from { opacity: 1; transform: scaleX(0); } to { opacity: 1; transform: scaleX(1); } }
+@keyframes saida    { to { opacity: 0; } }
+@keyframes escurecer { to { opacity: 1; } }
+
+@keyframes pulsoBorda {
+    0%, 100% { box-shadow: 0 0 0 rgba(172, 130, 255, 0); }
+    50%      { box-shadow: 0 0 22px rgba(172, 130, 255, .55); }
 }
 
-.botao-iniciar:hover {
-    color: #080817;
-    background-color: #a77bff;
+/* ---------- ACESSIBILIDADE / TELAS PEQUENAS ---------- */
 
-    box-shadow: 0 0 25px rgba(172, 130, 255, 0.7);
+@media (max-width: 600px) {
+    .botao-som { top: 10px; right: 10px; font-size: 10px; padding: 8px 10px; }
+    .tela-inicial .subtitulo { font-size: 10px; letter-spacing: 2px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .pagina-intro *, .pagina-intro *::before, .pagina-intro *::after { animation: none !important; transition: none !important; }
+
+    .tela-inicial .simbolo-topo, .tela-inicial .linha-decorativa, .tela-inicial .subtitulo,
+    .tela-inicial .pixel, .tela-inicial .quest, .tela-inicial .botao-start,
+    .tela-inicial .indicacao, .botao-som { opacity: 1; }
+
+    .fagulha { display: none; }
 }
 
 
@@ -730,6 +951,58 @@ a {
     background: #9678ff;
 }
 
+
+
+.pagina-inicio .topo-inicio {
+    position: relative;
+    isolation: isolate;
+}
+
+.pagina-inicio .topo-inicio::before {
+    content: "";
+    position: absolute;
+    inset: -22px -26px;
+    z-index: -1;
+    border-radius: 18px;
+    background: rgba(4, 7, 24, 0.66);
+    box-shadow: 0 0 36px 22px rgba(4, 7, 24, 0.66);
+    pointer-events: none;
+}
+
+/* 2) sombra nas letras: contorno escuro curto + halo escuro suave */
+.pagina-inicio .boas-vindas .subtitulo,
+.pagina-inicio .boas-vindas p,
+.pagina-inicio .area-trilha h2,
+.pagina-inicio .area-trilha > p,
+.pagina-inicio .trilha strong,
+.pagina-inicio .trilha-desc {
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.95), 0 0 12px rgba(3, 5, 20, 0.95);
+}
+
+.pagina-inicio .boas-vindas h1 {
+    text-shadow:
+        3px 3px 0 #3b2a85,
+        0 4px 16px rgba(0, 0, 0, 0.75),
+        0 0 24px rgba(167, 139, 250, 0.45);
+}
+
+/* 3) textos secundários mais claros (eram #9299ad e #b8bfd3) */
+.pagina-inicio .boas-vindas p:not(.subtitulo) { color: #d3d8e8; }
+.pagina-inicio .area-trilha > p              { color: #cdd2e4; }
+.pagina-inicio .trilha-desc                  { color: #c2c8dc; }
+
+/* bolinhas da trilha: anel escuro separa da água */
+.pagina-inicio .trilha-no {
+    box-shadow: 0 0 0 3px #060a20, 0 3px 8px rgba(0, 0, 0, 0.6);
+}
+
+/* telas estreitas: coluna única, halo menor para não gerar rolagem lateral */
+@media (max-width: 1000px) {
+    .pagina-inicio .topo-inicio::before {
+        inset: -12px -4px;
+        box-shadow: 0 0 24px 14px rgba(4, 7, 24, 0.66);
+    }
+}
 
 
 /* =================================
@@ -1949,4 +2222,382 @@ a {
     .pagina-inicio::after { animation: none; }
 
     .pagina-inicio .cabecalho-dashboard nav a { transition: none; }
+}
+
+
+
+/* =====================================
+   PIXEL QUEST - TELA DE HISTÓRIA  (NOVA)
+   Fica no FINAL do arquivo e substitui os dois blocos antigos de história.
+   Os @keyframes daqui começam com "his-" para não sobrescrever os da tela
+   inicial (antes, o "subir" e o "piscar" da história quebravam as faíscas).
+===================================== */
+
+/* ==============================
+   BASE
+============================== */
+
+body.pagina-historia {
+    min-height: 100vh;
+    min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    background: #050817;
+    color: #fff;
+    font-family: 'Press Start 2P', monospace;
+    overflow-x: hidden;
+}
+
+/* ==============================
+   FUNDO (escurecido, para o desenho aparecer)
+============================== */
+
+.fundo {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    background:
+        linear-gradient(to top, rgba(5, 8, 23, .95) 0%, rgba(5, 8, 23, .35) 70%),
+        url('../imagens/intro-scene.png') center 92% / cover no-repeat;
+    filter: brightness(.55);
+    image-rendering: pixelated;
+}
+
+.estrelas {
+    position: fixed;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+}
+
+.estrelas i {
+    position: absolute;
+    width: 3px;
+    height: 3px;
+    background: #fff;
+    opacity: .2;
+    animation: his-cintilar var(--t, 3s) var(--d, 0s) steps(4) infinite;
+}
+
+/* ==============================
+   BOTÃO PULAR
+============================== */
+
+.pular {
+    position: fixed;
+    top: 20px;
+    right: 24px;
+    z-index: 5;
+    color: #d0c5e8;
+    font-size: 10px;
+    letter-spacing: 1px;
+    text-decoration: none;
+    opacity: .8;
+    transition: color .2s, opacity .2s;
+}
+
+.pular:hover { color: #ffd36b; opacity: 1; }
+
+/* ==============================
+   A CENA (onde ficam os desenhos)
+   Obs.: a tela inicial também usa a classe .cena (position: fixed).
+   Por isso aqui o seletor é escopado com body.pagina-historia.
+============================== */
+
+body.pagina-historia .cena {
+    position: relative;
+    inset: auto;
+    z-index: 2;
+    flex: 1;
+    min-height: 200px;
+    padding: 70px 16px 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 28px;
+    overflow: visible;
+    --e: 8px;            /* tamanho de cada pixel (o JS muda por capítulo) */
+    --aura: 172,130,255; /* cor do brilho (o JS muda por capítulo) */
+}
+
+/* brilho redondo atrás dos desenhos */
+body.pagina-historia .cena::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    margin: auto;
+    z-index: -1;
+    width: min(80vw, 480px);
+    height: min(80vw, 480px);
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(var(--aura), .5) 0, transparent 65%);
+    animation: his-aura 4s ease-in-out infinite;
+}
+
+/* o tamanho do desenho = nº de pixels de largura x tamanho do pixel */
+.sprite {
+    width: calc(var(--c) * var(--e) * var(--k, 1));
+    height: auto;
+    image-rendering: pixelated;
+    filter: drop-shadow(0 0 14px rgba(var(--aura), .8));
+    animation: his-flutuar 3.4s ease-in-out infinite;
+    transition: filter .4s, opacity .4s, scale .4s;
+}
+
+.sprite:nth-child(2) { animation-delay: -.8s; }
+.sprite:nth-child(3) { animation-delay: -1.6s; }
+.sprite:nth-child(4) { animation-delay: -2.4s; }
+
+/* cristal rachado: pisca como se estivesse falhando */
+.sprite.cristalPartido {
+    animation: his-flutuar 3.4s ease-in-out infinite, his-falhar 2.4s steps(1) infinite;
+}
+
+/* pedacinhos soltos, em alturas diferentes */
+.sprite.caco { animation-duration: 2.2s; }
+.cena .caco:nth-child(1) { margin-bottom: 90px; }
+.cena .caco:nth-child(2) { margin-top: 80px; }
+.cena .caco:nth-child(4) { margin-bottom: 50px; }
+.cena .caco:nth-child(5) { margin-top: 100px; }
+
+/* capítulo da escolha: o item escolhido cresce, o outro apaga */
+.sprite.escolhido {
+    scale: 1.25;
+    filter: drop-shadow(0 0 20px #ffd36b);
+}
+
+.sprite.apagado {
+    opacity: .3;
+    filter: grayscale(1);
+}
+
+/* entrada da cena (e o tremor quando o cristal quebra) */
+body.pagina-historia .cena.nova   { animation: his-entrar .5s steps(5) both; }
+body.pagina-historia .cena.tremer { animation: his-entrar .5s steps(5) both, his-tremer .6s .5s steps(8); }
+
+/* ==============================
+   CAIXA DE DIÁLOGO
+============================== */
+
+.dialogo {
+    position: relative;
+    z-index: 3;
+    width: min(740px, calc(100% - 32px));
+    margin: 0 auto 24px;
+    padding: 32px 28px 18px;
+
+    background: rgba(12, 14, 40, .94);
+    border: 4px solid #c4a5ff;
+    border-radius: 6px;
+    box-shadow:
+        inset 0 0 0 3px #12143a,
+        inset 0 0 0 5px #7d5cc9,
+        0 0 30px rgba(167, 123, 255, .35);
+
+    animation: his-subir .8s .3s ease both;
+}
+
+.nome {
+    position: absolute;
+    top: -17px;
+    left: 24px;
+    padding: 9px 14px;
+    background: #a77bff;
+    color: #12143a;
+    font-size: 10px;
+    border: 3px solid #12143a;
+    border-radius: 4px;
+}
+
+#titulo {
+    margin-bottom: 12px;
+    color: #ffd36b;
+    font-size: 14px;
+    font-weight: normal;
+    line-height: 1.5;
+}
+
+.area-texto { position: relative; }
+
+#texto {
+    min-height: 70px;
+    padding-right: 20px;
+    color: #f1ecff;
+    font-size: 11px;
+    line-height: 2.1;
+}
+
+/* ==============================
+   ESCOLHAS
+============================== */
+
+.escolhas {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 12px;
+}
+
+.escolhas:empty { display: none; }
+
+.escolhas button {
+    flex: 1 1 220px;
+    padding: 12px 14px;
+    background: transparent;
+    color: #f1ecff;
+    font-family: inherit;
+    font-size: 10px;
+    line-height: 1.6;
+    border: 2px solid #7d5cc9;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background .2s, border-color .2s, transform .2s;
+}
+
+.escolhas button:hover { border-color: #c4a5ff; transform: translateY(-2px); }
+
+.escolhas button.escolhida {
+    background: #a77bff;
+    color: #12143a;
+    border-color: #c4a5ff;
+}
+
+/* ==============================
+   RODAPÉ: bolinhas + botões
+============================== */
+
+.rodape {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 14px;
+    margin-top: 16px;
+    padding-top: 14px;
+    border-top: 2px dashed rgba(196, 165, 255, .25);
+}
+
+.pontos { display: flex; gap: 8px; }
+
+.pontos span {
+    width: 10px;
+    height: 10px;
+    background: #2b2d5c;
+    border-radius: 50%;
+    transition: background .3s, transform .3s;
+}
+
+.pontos span.ativo { background: #ffd36b; transform: scale(1.3); }
+.pontos span.feito { background: #a77bff; }
+
+.botoes { display: flex; gap: 12px; }
+
+.botoes button {
+    padding: 12px 16px;
+    font-family: inherit;
+    font-size: 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background .2s, color .2s, transform .2s, opacity .2s;
+}
+
+.botao-voltar { background: transparent; color: #c4a5ff; border: 2px solid #7d5cc9; }
+.botao-avancar { background: #ffd36b; color: #12143a; border: 2px solid #ffd36b; }
+
+.botoes button:hover:not(:disabled) { transform: translateY(-2px); }
+.botao-avancar:hover:not(:disabled) { background: #fff; }
+.botoes button:disabled { opacity: .35; cursor: not-allowed; }
+
+/* foco visível para quem usa teclado */
+.botoes button:focus-visible,
+.escolhas button:focus-visible,
+.pular:focus-visible {
+    outline: 3px solid #ffb900;
+    outline-offset: 3px;
+}
+
+/* ==============================
+   SETINHA PISCANDO
+============================== */
+
+.seta {
+    position: absolute;
+    right: 0;
+    bottom: 4px;
+    color: #ffd36b;
+    font-size: 10px;
+    opacity: 0;
+}
+
+.seta.pisca { animation: his-piscar 1s steps(2) infinite; }
+
+/* ==============================
+   SAÍDA: escurece a tela ao começar
+============================== */
+
+body.pagina-historia::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    background: #03050f;
+    opacity: 0;
+    pointer-events: none;
+}
+
+body.pagina-historia.saindo::after { animation: his-escurecer .45s steps(6) forwards; }
+
+/* ==============================
+   ANIMAÇÕES
+============================== */
+
+@keyframes his-flutuar   { 50% { transform: translateY(-8px); } }
+@keyframes his-aura      { 50% { transform: scale(1.12); opacity: .8; } }
+@keyframes his-cintilar  { 50% { opacity: 1; } }
+@keyframes his-piscar    { 50% { opacity: 0; } }
+@keyframes his-escurecer { to { opacity: 1; } }
+@keyframes his-entrar    { from { opacity: 0; } to { opacity: 1; } }
+
+@keyframes his-subir {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: none; }
+}
+
+@keyframes his-falhar {
+    0%, 80%, 100% { opacity: 1; }
+    84% { opacity: .35; }
+    90% { opacity: .9; }
+    94% { opacity: .5; }
+}
+
+@keyframes his-tremer {
+    0%, 100% { transform: translate(0, 0); }
+    20% { transform: translate(-8px, 3px); }
+    40% { transform: translate(7px, -4px); }
+    60% { transform: translate(-5px, -2px); }
+    80% { transform: translate(4px, 3px); }
+}
+
+/* ==============================
+   CELULAR
+============================== */
+
+@media (max-width: 600px) {
+    body.pagina-historia .cena { --k: .6; gap: 14px; padding-top: 60px; }
+
+    .dialogo { margin-bottom: 16px; padding: 30px 18px 18px; }
+
+    #titulo { font-size: 12px; }
+    #texto  { font-size: 10px; min-height: 100px; }
+
+    .rodape { justify-content: center; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .pagina-historia *,
+    .pagina-historia *::before,
+    .pagina-historia *::after {
+        animation: none !important;
+        transition: none !important;
+    }
 }
