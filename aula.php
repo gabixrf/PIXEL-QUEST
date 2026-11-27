@@ -86,7 +86,7 @@ $feitas = count(array_filter($questoes, fn($q) => (int)$q["concluida"] === 1)) +
                 <h2>Atividades em preparação</h2>
                 <p>O conteúdo desta aula está sendo organizado. Volte em breve!</p>
             </section><?php endif; ?>
-        <a class="pq-voltar" href="aulas.php?id=<?= (int)$aula["regiao_id"] ?>">Voltar para as aulas</a>
+        <a class="pq-voltar" href="regiao.php?id=<?= (int)$aula["regiao_id"] ?>">Voltar para as aulas</a>
     </main>
     <script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.55.1/min/vs/loader.js"></script>
     <script>

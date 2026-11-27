@@ -2555,342 +2555,246 @@ body.pagina-intro.saindo-pagina::after { animation: escurecer .45s steps(6) forw
 
 
 
-/* =====================================
-   PIXEL QUEST - TELA DE HISTÓRIA  (NOVA)
-   Fica no FINAL do arquivo e substitui os dois blocos antigos de história.
-   Os @keyframes daqui começam com "his-" para não sobrescrever os da tela
-   inicial (antes, o "subir" e o "piscar" da história quebravam as faíscas).
-===================================== */
+/* =====================================================
+   PIXEL QUEST - TELA DE HISTÓRIA (NARRATIVA CONTÍNUA)
+   APAGUE do style.css tudo a partir do comentário
+   "PIXEL QUEST - TELA DE HISTÓRIA (REFORMULADA)" até o FIM do arquivo
+   e cole este bloco no lugar. Nada acima disso é alterado.
+   Tudo é escopado em body.pagina-historia ou usa classes h-*.
+   Os @keyframes começam com "his-" para não colidir com os outros.
+===================================================== */
 
-/* ==============================
-   BASE
-============================== */
+html:has(body.pagina-historia) { background: #000000; }
 
 body.pagina-historia {
+    --aura: 172, 130, 255;
     min-height: 100vh;
     min-height: 100dvh;
-    display: flex;
-    flex-direction: column;
-    background: #050817;
-    color: #fff;
-    font-family: 'Press Start 2P', monospace;
+    background: #000000;
+    color: #ece6ff;
+    font-family: 'Roboto Mono', monospace;
     overflow-x: hidden;
 }
 
-/* ==============================
-   FUNDO (escurecido, para o desenho aparecer)
-============================== */
+/* ---------- PULAR (único botão, canto superior direito) ---------- */
 
-.fundo {
+.h-pular {
     position: fixed;
-    inset: 0;
-    z-index: 0;
-    background:
-        linear-gradient(to top, rgba(5, 8, 23, .95) 0%, rgba(5, 8, 23, .35) 70%),
-        url('../imagens/intro-scene.png') center 92% / cover no-repeat;
-    filter: brightness(.55);
-    image-rendering: pixelated;
-}
-
-.estrelas {
-    position: fixed;
-    inset: 0;
-    z-index: 1;
-    pointer-events: none;
-}
-
-.estrelas i {
-    position: absolute;
-    width: 3px;
-    height: 3px;
-    background: #fff;
-    opacity: .2;
-    animation: his-cintilar var(--t, 3s) var(--d, 0s) steps(4) infinite;
-}
-
-/* ==============================
-   BOTÃO PULAR
-============================== */
-
-.pular {
-    position: fixed;
-    top: 20px;
-    right: 24px;
-    z-index: 5;
-    color: #d0c5e8;
-    font-size: 10px;
+    top: max(14px, env(safe-area-inset-top));
+    right: max(14px, env(safe-area-inset-right));
+    z-index: 10;
+    padding: 8px 10px;
+    background: transparent;
+    color: #8f86a8;
+    border: 1px solid #3b2a85;
+    font-family: 'Press Start 2P', monospace;
+    font-size: 9px;
     letter-spacing: 1px;
-    text-decoration: none;
-    opacity: .8;
-    transition: color .2s, opacity .2s;
+    cursor: pointer;
+    transition: color .2s, border-color .2s, background-color .2s;
 }
 
-.pular:hover { color: #ffd36b; opacity: 1; }
+.h-pular:hover {
+    color: #ffffff;
+    border-color: #a77bff;
+    background: rgba(167, 123, 255, .15);
+}
 
-/* ==============================
-   A CENA (onde ficam os desenhos)
-   Obs.: a tela inicial também usa a classe .cena (position: fixed).
-   Por isso aqui o seletor é escopado com body.pagina-historia.
-============================== */
+.h-pular:focus-visible,
+.h-escolhas button:focus-visible,
+.h-final:focus-visible { outline: 3px solid #ffb900; outline-offset: 3px; }
 
-body.pagina-historia .cena {
-    position: relative;
-    inset: auto;
-    z-index: 2;
-    flex: 1;
-    min-height: 200px;
-    padding: 70px 16px 10px;
+/* ---------- COLUNA DA NARRATIVA (sem card, sem moldura) ---------- */
+
+.h-historia {
+    width: 100%;
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 16vh max(22px, env(safe-area-inset-left)) 6vh max(22px, env(safe-area-inset-right));
+}
+
+.h-cena {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    margin-bottom: clamp(70px, 16vh, 150px);
+}
+
+.h-emoji,
+.h-palco,
+.h-capitulo,
+.h-escolhas {
+    opacity: 0;
+    transition: opacity 1s ease;
+}
+
+.h-emoji.visivel,
+.h-palco.visivel,
+.h-capitulo.visivel,
+.h-escolhas.visivel { opacity: 1; }
+
+.h-emoji {
+    margin-bottom: 20px;
+    font-size: clamp(34px, 7vw, 52px);
+    line-height: 1;
+    filter: drop-shadow(0 0 16px rgba(var(--aura), .6));
+}
+
+/* ---------- DESENHOS (pixel art preservada) ---------- */
+
+.h-palco {
+    --k: 1;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 28px;
-    overflow: visible;
-    --e: 8px;            /* tamanho de cada pixel (o JS muda por capítulo) */
-    --aura: 172,130,255; /* cor do brilho (o JS muda por capítulo) */
+    gap: 24px;
+    margin-bottom: 34px;
 }
 
-/* brilho redondo atrás dos desenhos */
-body.pagina-historia .cena::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    margin: auto;
-    z-index: -1;
-    width: min(80vw, 480px);
-    height: min(80vw, 480px);
-    border-radius: 50%;
-    background: radial-gradient(circle, rgba(var(--aura), .5) 0, transparent 65%);
-    animation: his-aura 4s ease-in-out infinite;
-}
-
-/* o tamanho do desenho = nº de pixels de largura x tamanho do pixel */
 .sprite {
-    width: calc(var(--c) * var(--e) * var(--k, 1));
+    width: calc(var(--c) * var(--e) * var(--k));
+    max-width: 22vw;
     height: auto;
     image-rendering: pixelated;
-    filter: drop-shadow(0 0 14px rgba(var(--aura), .8));
-    animation: his-flutuar 3.4s ease-in-out infinite;
+    filter: drop-shadow(0 0 14px rgba(var(--aura), .85));
+    animation: his-flutuar 3.4s calc(var(--i, 0) * -.8s) ease-in-out infinite;
     transition: filter .4s, opacity .4s, scale .4s;
 }
 
-.sprite:nth-child(2) { animation-delay: -.8s; }
-.sprite:nth-child(3) { animation-delay: -1.6s; }
-.sprite:nth-child(4) { animation-delay: -2.4s; }
+.h-palco:has(.sprite:only-child) .sprite { max-width: 40vw; }
 
-/* cristal rachado: pisca como se estivesse falhando */
-.sprite.cristalPartido {
-    animation: his-flutuar 3.4s ease-in-out infinite, his-falhar 2.4s steps(1) infinite;
-}
-
-/* pedacinhos soltos, em alturas diferentes */
+.sprite.cristalPartido { animation: his-flutuar 3.4s ease-in-out infinite, his-falhar 2.4s steps(1) infinite; }
 .sprite.caco { animation-duration: 2.2s; }
-.cena .caco:nth-child(1) { margin-bottom: 90px; }
-.cena .caco:nth-child(2) { margin-top: 80px; }
-.cena .caco:nth-child(4) { margin-bottom: 50px; }
-.cena .caco:nth-child(5) { margin-top: 100px; }
+.h-palco .caco:nth-child(1) { margin-bottom: 60px; }
+.h-palco .caco:nth-child(2) { margin-top: 50px; }
+.h-palco .caco:nth-child(4) { margin-bottom: 30px; }
+.h-palco .caco:nth-child(5) { margin-top: 60px; }
+.sprite.escolhido { scale: 1.25; filter: drop-shadow(0 0 20px #ffd36b); }
+.sprite.apagado { opacity: .3; filter: grayscale(1); }
 
-/* capítulo da escolha: o item escolhido cresce, o outro apaga */
-.sprite.escolhido {
-    scale: 1.25;
-    filter: drop-shadow(0 0 20px #ffd36b);
+.h-palco.tremer { animation: his-tremer .6s 1s steps(8); }
+
+/* ---------- TEXTO ---------- */
+
+.h-capitulo {
+    margin-bottom: 14px;
+    color: #8f86a8;
+    font-family: 'Press Start 2P', monospace;
+    font-size: 9px;
+    letter-spacing: 3px;
 }
 
-.sprite.apagado {
-    opacity: .3;
-    filter: grayscale(1);
-}
-
-/* entrada da cena (e o tremor quando o cristal quebra) */
-body.pagina-historia .cena.nova   { animation: his-entrar .5s steps(5) both; }
-body.pagina-historia .cena.tremer { animation: his-entrar .5s steps(5) both, his-tremer .6s .5s steps(8); }
-
-/* ==============================
-   CAIXA DE DIÁLOGO
-============================== */
-
-.dialogo {
-    position: relative;
-    z-index: 3;
-    width: min(740px, calc(100% - 32px));
-    margin: 0 auto 24px;
-    padding: 32px 28px 18px;
-
-    background: rgba(12, 14, 40, .94);
-    border: 4px solid #c4a5ff;
-    border-radius: 6px;
-    box-shadow:
-        inset 0 0 0 3px #12143a,
-        inset 0 0 0 5px #7d5cc9,
-        0 0 30px rgba(167, 123, 255, .35);
-
-    animation: his-subir .8s .3s ease both;
-}
-
-.nome {
-    position: absolute;
-    top: -17px;
-    left: 24px;
-    padding: 9px 14px;
-    background: #a77bff;
-    color: #12143a;
-    font-size: 10px;
-    border: 3px solid #12143a;
-    border-radius: 4px;
-}
-
-#titulo {
-    margin-bottom: 12px;
+.h-titulo {
+    min-height: 1.35em;
+    margin-bottom: 20px;
     color: #ffd36b;
-    font-size: 14px;
-    font-weight: normal;
-    line-height: 1.5;
+    font-family: 'Press Start 2P', monospace;
+    font-size: clamp(16px, 4.2vw, 34px);
+    font-weight: 400;
+    line-height: 1.4;
+    text-shadow: 3px 3px 0 #3b2a85, 0 0 24px rgba(255, 211, 107, .3);
 }
 
-.area-texto { position: relative; }
-
-#texto {
-    min-height: 70px;
-    padding-right: 20px;
-    color: #f1ecff;
-    font-size: 11px;
-    line-height: 2.1;
+.h-texto {
+    max-width: 58ch;
+    color: #ece6ff;
+    font-size: clamp(14px, 1.7vw, 17px);
+    line-height: 1.9;
 }
 
-/* ==============================
-   ESCOLHAS
-============================== */
+.h-texto:empty { display: none; }
+.h-resultado { margin-top: 22px; }
 
-.escolhas {
+.h-texto .w,
+.h-titulo .w { display: inline-block; white-space: nowrap; }
+
+.h-texto .w span,
+.h-titulo .w span { opacity: 0; }
+
+.h-texto .w span.on,
+.h-titulo .w span.on { opacity: 1; }
+
+/* cursor de digitação na última letra escrita */
+.w span.cur { box-shadow: 2px 0 0 #c4a5ff; }
+
+.h-hl {
+    font-style: normal;
+    font-weight: 600;
+    color: #ffd36b;
+    text-shadow: 0 0 14px rgba(255, 211, 107, .45);
+}
+
+/* ---------- ESCOLHA (parte do conteúdo da história) ---------- */
+
+.h-escolhas {
     display: flex;
     flex-wrap: wrap;
+    justify-content: center;
     gap: 12px;
-    margin-top: 12px;
+    margin-top: 26px;
 }
 
-.escolhas:empty { display: none; }
+.h-escolhas:empty { display: none; }
 
-.escolhas button {
+.h-escolhas button {
     flex: 1 1 220px;
-    padding: 12px 14px;
+    max-width: 300px;
+    padding: 14px;
     background: transparent;
     color: #f1ecff;
-    font-family: inherit;
+    border: 2px solid #7d5cc9;
+    font-family: 'Press Start 2P', monospace;
     font-size: 10px;
     line-height: 1.6;
-    border: 2px solid #7d5cc9;
-    border-radius: 4px;
     cursor: pointer;
-    transition: background .2s, border-color .2s, transform .2s;
+    transition: background-color .2s, border-color .2s, color .2s, opacity .3s;
 }
 
-.escolhas button:hover { border-color: #c4a5ff; transform: translateY(-2px); }
+.h-escolhas button:hover:not(:disabled) { border-color: #ffd36b; background: rgba(255, 211, 107, .1); }
+.h-escolhas button:disabled { cursor: default; opacity: .35; }
+.h-escolhas button.escolhida { opacity: 1; border-color: #ffd36b; color: #ffd36b; }
 
-.escolhas button.escolhida {
-    background: #a77bff;
-    color: #12143a;
-    border-color: #c4a5ff;
-}
+/* ---------- FINAL (aparece só quando a história termina) ---------- */
 
-/* ==============================
-   RODAPÉ: bolinhas + botões
-============================== */
-
-.rodape {
+.h-fim {
     display: flex;
-    align-items: center;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    gap: 14px;
-    margin-top: 16px;
-    padding-top: 14px;
-    border-top: 2px dashed rgba(196, 165, 255, .25);
+    justify-content: center;
+    padding: 0 20px max(18vh, env(safe-area-inset-bottom));
 }
 
-.pontos { display: flex; gap: 8px; }
-
-.pontos span {
-    width: 10px;
-    height: 10px;
-    background: #2b2d5c;
-    border-radius: 50%;
-    transition: background .3s, transform .3s;
+.h-final {
+    padding: 10px 14px;
+    color: #ffffff;
+    font-family: 'Press Start 2P', monospace;
+    font-size: clamp(11px, 2.6vw, 14px);
+    letter-spacing: .1em;
+    text-shadow: 2px 2px 0 #2a1f6b;
+    animation: his-piscar 1.2s steps(2) infinite;
 }
 
-.pontos span.ativo { background: #ffd36b; transform: scale(1.3); }
-.pontos span.feito { background: #a77bff; }
+.h-final:hover { color: #ffd36b; }
+.h-final::before { content: "\25B6\00a0"; color: #ffd36b; }
 
-.botoes { display: flex; gap: 12px; }
-
-.botoes button {
-    padding: 12px 16px;
-    font-family: inherit;
-    font-size: 10px;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: background .2s, color .2s, transform .2s, opacity .2s;
-}
-
-.botao-voltar { background: transparent; color: #c4a5ff; border: 2px solid #7d5cc9; }
-.botao-avancar { background: #ffd36b; color: #12143a; border: 2px solid #ffd36b; }
-
-.botoes button:hover:not(:disabled) { transform: translateY(-2px); }
-.botao-avancar:hover:not(:disabled) { background: #fff; }
-.botoes button:disabled { opacity: .35; cursor: not-allowed; }
-
-/* foco visível para quem usa teclado */
-.botoes button:focus-visible,
-.escolhas button:focus-visible,
-.pular:focus-visible {
-    outline: 3px solid #ffb900;
-    outline-offset: 3px;
-}
-
-/* ==============================
-   SETINHA PISCANDO
-============================== */
-
-.seta {
-    position: absolute;
-    right: 0;
-    bottom: 4px;
-    color: #ffd36b;
-    font-size: 10px;
-    opacity: 0;
-}
-
-.seta.pisca { animation: his-piscar 1s steps(2) infinite; }
-
-/* ==============================
-   SAÍDA: escurece a tela ao começar
-============================== */
+/* ---------- SAÍDA ---------- */
 
 body.pagina-historia::after {
     content: "";
     position: fixed;
     inset: 0;
     z-index: 100;
-    background: #03050f;
+    background: #000000;
     opacity: 0;
     pointer-events: none;
 }
 
 body.pagina-historia.saindo::after { animation: his-escurecer .45s steps(6) forwards; }
 
-/* ==============================
-   ANIMAÇÕES
-============================== */
+/* ---------- ANIMAÇÕES ---------- */
 
 @keyframes his-flutuar   { 50% { transform: translateY(-8px); } }
-@keyframes his-aura      { 50% { transform: scale(1.12); opacity: .8; } }
-@keyframes his-cintilar  { 50% { opacity: 1; } }
 @keyframes his-piscar    { 50% { opacity: 0; } }
 @keyframes his-escurecer { to { opacity: 1; } }
-@keyframes his-entrar    { from { opacity: 0; } to { opacity: 1; } }
-
-@keyframes his-subir {
-    from { opacity: 0; transform: translateY(20px); }
-    to   { opacity: 1; transform: none; }
-}
 
 @keyframes his-falhar {
     0%, 80%, 100% { opacity: 1; }
@@ -2907,26 +2811,27 @@ body.pagina-historia.saindo::after { animation: his-escurecer .45s steps(6) forw
     80% { transform: translate(4px, 3px); }
 }
 
-/* ==============================
-   CELULAR
-============================== */
+/* ---------- RESPONSIVO ---------- */
 
 @media (max-width: 600px) {
-    body.pagina-historia .cena { --k: .6; gap: 14px; padding-top: 60px; }
+    .h-historia { padding-top: 14vh; }
+    .h-pular { font-size: 8px; padding: 7px 9px; }
+    .h-palco { --k: .6; gap: 12px; margin-bottom: 26px; }
+    .h-palco .caco:nth-child(1) { margin-bottom: 36px; }
+    .h-palco .caco:nth-child(2) { margin-top: 30px; }
+    .h-palco .caco:nth-child(4) { margin-bottom: 18px; }
+    .h-palco .caco:nth-child(5) { margin-top: 36px; }
+    .h-capitulo { font-size: 8px; letter-spacing: 2px; }
+    .h-escolhas button { flex-basis: 100%; max-width: none; }
+}
 
-    .dialogo { margin-bottom: 16px; padding: 30px 18px 18px; }
-
-    #titulo { font-size: 12px; }
-    #texto  { font-size: 10px; min-height: 100px; }
-
-    .rodape { justify-content: center; }
+@media (max-height: 560px) and (orientation: landscape) {
+    .h-historia { padding-top: 70px; }
+    .h-palco { --k: .5; }
 }
 
 @media (prefers-reduced-motion: reduce) {
     .pagina-historia *,
     .pagina-historia *::before,
-    .pagina-historia *::after {
-        animation: none !important;
-        transition: none !important;
-    }
+    .pagina-historia *::after { animation: none !important; transition: none !important; }
 }

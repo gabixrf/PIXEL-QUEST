@@ -1,246 +1,123 @@
 document.addEventListener("DOMContentLoaded", () => {
 
     // ==============================
-    // 1) OS DESENHOS (pixel art em texto!)
-    // Cada letra é um pixel e cada linha de texto é uma fileira do desenho.
-    // O "." é vazio. As cores estão na tabela logo abaixo.
-    // Para mudar um desenho, é só editar as letras.
+    // 1) PIXEL ART EM TEXTO (preservada do original)
     // ==============================
     const cores = {
-        k: "#12143a", // contorno
-        w: "#ffffff", // branco / brilho
-        p: "#c4a5ff", // roxo claro
-        P: "#a77bff", // roxo
-        d: "#7855e8", // roxo escuro (sombra)
-        y: "#ffd36b", // dourado
-        o: "#ffb900", // laranja
-        g: "#4ade80", // verde
-        G: "#1f9d55", // verde escuro
-        n: "#8b5a2b", // marrom
-        s: "#9299ad", // cinza
-        S: "#5b6490", // cinza escuro
-        b: "#38bdf8", // azul
-        v: "#0a0f2c"  // quase preto
+        k: "#12143a", w: "#ffffff", p: "#c4a5ff", P: "#a77bff", d: "#7855e8",
+        y: "#ffd36b", o: "#ffb900", g: "#4ade80", G: "#1f9d55", n: "#8b5a2b",
+        s: "#9299ad", S: "#5b6490", b: "#38bdf8", v: "#0a0f2c"
     };
 
     const sprites = {
         cristal: [
-            ".....kk.....",
-            "....kppk....",
-            "...kpwppk...",
-            "..kpwpPPPk..",
-            ".kpwpPPPPPk.",
-            "kpwpPPPPPPPk",
-            "kpwPPPPPPPdk",
-            "kpPPPPPPPPdk",
-            ".kPPPPPPPdk.",
-            "..kPPPPPdk..",
-            "...kPPPdk...",
-            "....kPdk....",
-            ".....kk....."
+            ".....kk.....", "....kppk....", "...kpwppk...", "..kpwpPPPk..", ".kpwpPPPPPk.", "kpwpPPPPPPPk",
+            "kpwPPPPPPPdk", "kpPPPPPPPPdk", ".kPPPPPPPdk.", "..kPPPPPdk..", "...kPPPdk...", "....kPdk....", ".....kk....."
         ],
-        // o mesmo cristal, mas com uma rachadura (as letras "k" no meio)
         cristalPartido: [
-            ".....kk.....",
-            "....kppk....",
-            "...kpwkpk...",
-            "..kpwpkPPk..",
-            ".kpwpPkPPPk.",
-            "kpwpPPkPPPdk",
-            "kpwPPkkPPPdk",
-            "kpPPPkPPPPdk",
-            ".kPPPPkPPdk.",
-            "..kPPkPPdk..",
-            "...kPkPdk...",
-            "....kkdk....",
-            ".....kk....."
+            ".....kk.....", "....kppk....", "...kpwkpk...", "..kpwpkPPk..", ".kpwpPkPPPk.", "kpwpPPkPPPdk",
+            "kpwPPkkPPPdk", "kpPPPkPPPPdk", ".kPPPPkPPdk.", "..kPPkPPdk..", "...kPkPdk...", "....kkdk....", ".....kk....."
         ],
-        caco: [
-            ".kk..",
-            "kppk.",
-            "kwPdk",
-            ".kPdk",
-            "..kdk",
-            "...k."
-        ],
+        caco: [".kk..", "kppk.", "kwPdk", ".kPdk", "..kdk", "...k."],
         espada: [
-            "...k...",
-            "..kwk..",
-            "..kwk..",
-            "..kwk..",
-            "..kwk..",
-            "..kwk..",
-            "..kwk..",
-            "kkkkkkk",
-            "kyyoyyk",
-            "kkkkkkk",
-            "..knk..",
-            "..knk..",
-            "..kyk..",
-            "...k..."
+            "...k...", "..kwk..", "..kwk..", "..kwk..", "..kwk..", "..kwk..", "..kwk..",
+            "kkkkkkk", "kyyoyyk", "kkkkkkk", "..knk..", "..knk..", "..kyk..", "...k..."
         ],
         livro: [
-            "kkkkkkkkkk",
-            "kPPPPPPPPk",
-            "kPPPyyPPPk",
-            "kPPyyyyPPk",
-            "kPPPyyPPPk",
-            "kPPPPPPPPk",
-            "kddddddddk",
-            "kkkkkkkkkk",
-            "kwwwwwwwwk",
-            "kkkkkkkkkk"
+            "kkkkkkkkkk", "kPPPPPPPPk", "kPPPyyPPPk", "kPPyyyyPPk", "kPPPyyPPPk",
+            "kPPPPPPPPk", "kddddddddk", "kkkkkkkkkk", "kwwwwwwwwk", "kkkkkkkkkk"
         ],
         floresta: [
-            "...kkkk...",
-            "..kGggGk..",
-            ".kGggggGk.",
-            "kGggGggggk",
-            "kGgggggGGk",
-            ".kGGggGGk.",
-            "..kkGGkk..",
-            "...knnk...",
-            "...knnk...",
-            "...knnk...",
-            "..kkkkkk.."
+            "...kkkk...", "..kGggGk..", ".kGggggGk.", "kGggGggggk", "kGgggggGGk", ".kGGggGGk.",
+            "..kkGGkk..", "...knnk...", "...knnk...", "...knnk...", "..kkkkkk.."
         ],
         vale: [
-            "........yy",
-            "........yy",
-            "..........",
-            "...kkk....",
-            "..kgggk...",
-            ".kgggggk.k",
-            "kggggggkgk",
-            "kggbbgggGk",
-            "kgbbbgggGk",
-            "kggbbggGGk",
-            "kkkkkkkkkk"
+            "........yy", "........yy", "..........", "...kkk....", "..kgggk...", ".kgggggk.k",
+            "kggggggkgk", "kggbbgggGk", "kgbbbgggGk", "kggbbggGGk", "kkkkkkkkkk"
         ],
         montanha: [
-            "....kk....",
-            "...kwwk...",
-            "..kwwwwk..",
-            "..kwsswk..",
-            ".kssSSssk.",
-            ".ksSSSSsk.",
-            "kssSSSSssk",
-            "ksSSSSSSsk",
-            "kssSSSSssk",
-            "kkkkkkkkkk"
+            "....kk....", "...kwwk...", "..kwwwwk..", "..kwsswk..", ".kssSSssk.",
+            ".ksSSSSsk.", "kssSSSSssk", "ksSSSSSSsk", "kssSSSSssk", "kkkkkkkkkk"
         ],
         caverna: [
-            "..kkkkkk..",
-            ".kSSSSSSk.",
-            "kSSssssSSk",
-            "kSsvvvvsSk",
-            "kSvvvvvvSk",
-            "kSvvvvvvSk",
-            "kSvvvvvvSk",
-            "kSsvyvvsSk",
-            "kSsvvvvsSk",
-            "kkkkkkkkkk"
+            "..kkkkkk..", ".kSSSSSSk.", "kSSssssSSk", "kSsvvvvsSk", "kSvvvvvvSk",
+            "kSvvvvvvSk", "kSvvvvvvSk", "kSsvyvvsSk", "kSsvvvvsSk", "kkkkkkkkkk"
         ]
     };
 
     // ==============================
-    // 2) A HISTÓRIA (4 partes)
-    // cena  = quais desenhos aparecem        escala = tamanho dos pixels
-    // cor   = cor do brilho (R,G,B)          efeito = "tremer" (opcional)
+    // 2) A HISTÓRIA (textos originais; [[ ]] só marca o destaque dourado)
+    //    "emoji" é só ambientação, acima de cada trecho
     // ==============================
     let caminho = sessionStorage.getItem("caminho") || "explorador";
 
     const falas = [
         {
+            emoji: "🌌",
             titulo: "O Reino de Asteria",
-            texto: "Além das montanhas existe Asteria, um reino feito de código e imaginação. No coração dele brilha o Cristal do Conhecimento.",
-            cena: ["cristal"],
-            escala: 12,
-            cor: "172,130,255"
+            texto: "Além das montanhas existe [[Asteria]], um reino feito de código e imaginação. No coração dele brilha o [[Cristal do Conhecimento]].",
+            cena: ["cristal"], escala: 12, cor: "172,130,255"
         },
         {
+            emoji: "💥",
             titulo: "A Grande Falha",
-            texto: "Um dia, o cristal se partiu. Seus fragmentos se espalharam pelas quatro regiões e o reino perdeu a sua luz.",
+            texto: "Um dia, o [[cristal se partiu]]. Seus fragmentos se espalharam pelas [[quatro regiões]] e o reino perdeu a sua luz.",
             cena: ["caco", "caco", "cristalPartido", "caco", "caco"],
-            escala: 12,
-            cor: "248,113,113",
-            efeito: "tremer"
+            escala: 12, cor: "248,113,113", efeito: "tremer"
         },
         {
+            emoji: "🏰",
             titulo: "Uma Escolha",
             texto: "Os guardiões procuram alguém para recuperar os fragmentos. Como você quer começar a sua jornada?",
-            cena: ["espada", "livro"],
-            escala: 10,
-            cor: "255,211,107",
+            cena: ["espada", "livro"], escala: 10, cor: "255,211,107",
             escolhas: [
                 {
                     texto: "⚔ Explorar o desconhecido",
                     resultado: "Coragem não falta! Você parte sem medo dos desafios que vêm pela frente.",
-                    caminho: "explorador",
-                    item: 0 // destaca o 1º desenho da cena (a espada)
+                    caminho: "explorador", item: 0
                 },
                 {
                     texto: "✦ Buscar conhecimento",
                     resultado: "Boa ideia! Você vai aprender os segredos do código antes de enfrentar os desafios.",
-                    caminho: "sabio",
-                    item: 1 // destaca o 2º desenho (o livro)
+                    caminho: "sabio", item: 1
                 }
             ]
         },
         {
+            emoji: "🌳",
             titulo: "Sua História Começa",
-            // aqui o texto muda conforme a escolha do jogador
             texto: () =>
                 (caminho === "sabio"
                     ? "Com a mente afiada, você segue em frente. "
                     : "Com a espada em punho, você segue em frente. ") +
-                "Floresta, vale, montanhas e cavernas esperam por você. A cada desafio vencido, o cristal brilha um pouquinho mais.",
-            cena: ["floresta", "vale", "montanha", "caverna"],
-            escala: 8,
-            cor: "74,222,128"
+                "[[Floresta, vale, montanhas e cavernas]] esperam por você. A cada desafio vencido, o cristal brilha um pouquinho mais.",
+            cena: ["floresta", "vale", "montanha", "caverna"], escala: 8, cor: "74,222,128"
         }
     ];
 
+    const romanos = ["I", "II", "III", "IV"];
+
     // ==============================
-    // VARIÁVEIS DE CONTROLE
+    // CONTROLE
     // ==============================
-    let atual = 0;       // em qual parte da história estamos
-    let digitando = false;
-    let timer = null;
-    let textoAtual = "";
-    const escolhidas = {}; // lembra a escolha de cada parte: { 2: 0 }
+    const historia = document.getElementById("historia");
+    const botaoPular = document.getElementById("pular");
+    const final = document.getElementById("final");
     const reduzir = matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-    // ==============================
-    // ELEMENTOS DA TELA
-    // ==============================
-    const titulo = document.getElementById("titulo");
-    const texto = document.getElementById("texto");
-    const escolhas = document.getElementById("escolhas");
-    const pontos = document.getElementById("pontos");
-    const seta = document.getElementById("seta");
-    const cena = document.getElementById("cena");
-    const dialogo = document.getElementById("dialogo");
-    const estrelas = document.getElementById("estrelas");
-    const botaoAvancar = document.getElementById("avancar");
-    const botaoVoltar = document.getElementById("voltar");
+    let run = 0;               // muda a cada "Pular": cancela a animação em andamento
+    let redirecionar = null;
 
-    // bolinhas de progresso
-    falas.forEach(() => pontos.appendChild(document.createElement("span")));
+    const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+    const el = (tag, classe) => Object.assign(document.createElement(tag), { className: classe || "" });
+    const textoDe = (f) => (typeof f.texto === "function" ? f.texto() : f.texto);
 
-    // estrelinhas em posições aleatórias
-    for (let i = 0; i < 40; i++) {
-        const e = document.createElement("i");
-        e.style.left = Math.random() * 100 + "%";
-        e.style.top = Math.random() * 100 + "%";
-        e.style.setProperty("--d", Math.random() * 3 + "s");
-        e.style.setProperty("--t", 2 + Math.random() * 2 + "s");
-        estrelas.appendChild(e);
+    function seguir() {
+        window.scrollTo({ top: document.documentElement.scrollHeight, behavior: reduzir ? "auto" : "smooth" });
     }
 
     // ==============================
-    // DESENHAR OS SPRITES
-    // Lê as letras e pinta um quadradinho (pixel) para cada uma.
+    // SPRITES
     // ==============================
     function desenhar(nome) {
         const linhas = sprites[nome];
@@ -248,193 +125,225 @@ document.addEventListener("DOMContentLoaded", () => {
         c.width = linhas[0].length;
         c.height = linhas.length;
         c.className = "sprite " + nome;
-        c.style.setProperty("--c", c.width); // largura em pixels do desenho
-
-        const ctx = c.getContext("2d");
-        linhas.forEach((linha, y) => {
-            [...linha].forEach((letra, x) => {
-                if (letra === ".") return;
-                ctx.fillStyle = cores[letra];
-                ctx.fillRect(x, y, 1, 1);
-            });
-        });
+        c.style.setProperty("--c", c.width);
+        const g = c.getContext("2d");
+        linhas.forEach((linha, y) => [...linha].forEach((l, x) => {
+            if (l === ".") return;
+            g.fillStyle = cores[l];
+            g.fillRect(x, y, 1, 1);
+        }));
         return c;
     }
 
-    function desenharCena(fala) {
-        cena.innerHTML = "";
-        cena.style.setProperty("--e", fala.escala + "px");
-        cena.style.setProperty("--aura", fala.cor);
-        fala.cena.forEach((nome) => cena.appendChild(desenhar(nome)));
-
-        // reinicia a animação de entrada (e o tremor, se tiver)
-        cena.classList.remove("nova", "tremer");
-        void cena.offsetWidth;
-        cena.classList.add("nova");
-        if (fala.efeito) cena.classList.add(fala.efeito);
-    }
-
     // ==============================
-    // EFEITO DE DIGITAÇÃO
-    // Pausa um pouquinho nas vírgulas e pontos, fica mais natural.
+    // TEXTO: cada letra vira um <span> (espaço já reservado, sem pulos de layout)
     // ==============================
-    function escrever(conteudo) {
-        clearTimeout(timer);
-        textoAtual = conteudo;
-        texto.textContent = "";
-
-        if (reduzir) { // quem prefere menos animação vê o texto direto
-            terminarDigitacao();
-            return;
-        }
-
-        digitando = true;
-        atualizarBotoes();
-
-        let i = 0;
-        function proximaLetra() {
-            const letra = conteudo[i];
-            texto.textContent += letra;
-            i++;
-            if (i >= conteudo.length) return terminarDigitacao();
-
-            const pausa = ".!?".includes(letra) ? 350 : letra === "," ? 150 : 25;
-            timer = setTimeout(proximaLetra, pausa);
-        }
-        proximaLetra();
-    }
-
-    function terminarDigitacao() {
-        clearTimeout(timer);
-        texto.textContent = textoAtual;
-        digitando = false;
-        atualizarBotoes();
-    }
-
-    // ==============================
-    // BOTÕES, BOLINHAS E SETINHA
-    // ==============================
-    function atualizarBotoes() {
-        const ultima = atual === falas.length - 1;
-        const precisaEscolher = falas[atual].escolhas && escolhidas[atual] === undefined;
-
-        botaoAvancar.textContent = ultima ? "COMEÇAR ▶" : "CONTINUAR ▶";
-        botaoAvancar.disabled = precisaEscolher;
-        botaoVoltar.disabled = atual === 0;
-
-        seta.classList.toggle("pisca", !digitando);
-
-        pontos.querySelectorAll("span").forEach((ponto, i) => {
-            ponto.className = i < atual ? "feito" : i === atual ? "ativo" : "";
-        });
-    }
-
-    // ==============================
-    // ESCOLHAS
-    // ==============================
-    function mostrarEscolhas(fala) {
-        escolhas.innerHTML = "";
-        if (!fala.escolhas) return;
-
-        fala.escolhas.forEach((opcao, i) => {
-            const botao = document.createElement("button");
-            botao.type = "button";
-            botao.textContent = opcao.texto;
-
-            botao.addEventListener("click", () => {
-                escolhidas[atual] = i;
-                caminho = opcao.caminho;
-                sessionStorage.setItem("caminho", caminho); // dá pra usar no cadastro depois
-                marcarEscolha();
-                escrever(opcao.resultado);
+    function montar(alvoFinal, conteudo) {
+        alvoFinal.innerHTML = "";
+        const letras = [];
+        let hl = false;
+        for (const parte of conteudo.split(/(\[\[|\]\])/)) {
+            if (parte === "[[") { hl = true; continue; }
+            if (parte === "]]") { hl = false; continue; }
+            const alvo = hl ? el("em", "h-hl") : alvoFinal;
+            parte.split(/( )/).forEach((palavra) => {
+                if (palavra === "") return;
+                if (palavra === " ") { alvo.appendChild(document.createTextNode(" ")); return; }
+                const w = el("span", "w");
+                [...palavra].forEach((ch) => {
+                    const s = document.createElement("span");
+                    s.textContent = ch;
+                    w.appendChild(s);
+                    letras.push(s);
+                });
+                alvo.appendChild(w);
             });
-
-            escolhas.appendChild(botao);
-        });
-    }
-
-    // pinta o botão escolhido e destaca o desenho correspondente
-    function marcarEscolha() {
-        const escolhida = escolhidas[atual];
-        const fala = falas[atual];
-
-        escolhas.querySelectorAll("button").forEach((b, n) => {
-            b.classList.toggle("escolhida", n === escolhida);
-            b.setAttribute("aria-pressed", n === escolhida);
-        });
-
-        if (escolhida === undefined || !fala.escolhas) return;
-
-        const alvo = fala.escolhas[escolhida].item;
-        cena.querySelectorAll("canvas").forEach((c, n) => {
-            c.classList.toggle("escolhido", n === alvo);
-            c.classList.toggle("apagado", n !== alvo);
-        });
-    }
-
-    // ==============================
-    // MOSTRA UMA PARTE DA HISTÓRIA
-    // ==============================
-    function mostrarFala() {
-        const fala = falas[atual];
-
-        titulo.textContent = fala.titulo;
-        desenharCena(fala);
-        mostrarEscolhas(fala);
-        marcarEscolha();
-
-        // o texto pode ser uma frase ou uma função que monta a frase
-        escrever(typeof fala.texto === "function" ? fala.texto() : fala.texto);
-        atualizarBotoes();
-    }
-
-    function proximo() {
-        if (digitando) { // texto ainda aparecendo: o clique só completa ele
-            terminarDigitacao();
-            return;
+            if (hl) alvoFinal.appendChild(alvo);
         }
+        return letras;
+    }
 
-        if (falas[atual].escolhas && escolhidas[atual] === undefined) return;
+    // devolve false se o "Pular" cancelou no meio
+    async function digitar(letras, tok, vel) {
+        let anterior = null;
+        for (let i = 0; i < letras.length; i++) {
+            if (tok !== run) return false;
+            if (anterior) anterior.classList.remove("cur");
+            const l = letras[i];
+            l.classList.add("on", "cur");
+            anterior = l;
+            if (i % 40 === 0) seguir();
+            const ch = l.textContent;
+            await wait(".!?".includes(ch) ? 340 : ch === "," ? 150 : vel);
+        }
+        if (anterior) anterior.classList.remove("cur");
+        seguir();
+        return tok === run;
+    }
 
-        if (atual < falas.length - 1) {
-            atual++;
-            mostrarFala();
-        } else {
-            // escurece a tela e depois vai para o cadastro
-            document.body.classList.add("saindo");
-            setTimeout(() => { window.location.href = "cadastro_usuario.php"; }, 450);
+    // ==============================
+    // CENA
+    // ==============================
+    function criarCena(f, i) {
+        const sec = el("section", "h-cena");
+        const emoji = el("div", "h-emoji");
+        emoji.textContent = f.emoji;
+        emoji.setAttribute("aria-hidden", "true");
+
+        const palco = el("div", "h-palco");
+        palco.setAttribute("aria-hidden", "true");
+        palco.style.setProperty("--e", f.escala + "px");
+        palco.style.setProperty("--aura", f.cor);
+        f.cena.forEach((nome, n) => {
+            const s = desenhar(nome);
+            s.style.setProperty("--i", n);
+            palco.appendChild(s);
+        });
+
+        const cap = el("p", "h-capitulo");
+        cap.textContent = "CAPÍTULO " + romanos[i];
+        const tit = el("h2", "h-titulo");
+        const tx = el("p", "h-texto");
+        const esc = el("div", "h-escolhas");
+        const res = el("p", "h-texto h-resultado");
+
+        sec.append(emoji, palco, cap, tit, tx, esc, res);
+        historia.appendChild(sec);
+        return { sec, emoji, palco, cap, tit, tx, esc, res };
+    }
+
+    function marcarEscolha(c, f, e) {
+        c.esc.querySelectorAll("button").forEach((b, n) => {
+            b.classList.toggle("escolhida", n === e);
+            b.disabled = true;
+        });
+        const alvo = f.escolhas[e].item;
+        c.palco.querySelectorAll("canvas").forEach((s, n) => {
+            s.classList.toggle("escolhido", n === alvo);
+            s.classList.toggle("apagado", n !== alvo);
+        });
+    }
+
+    function esperarEscolha(c, f) {
+        return new Promise((resolve) => {
+            f.escolhas.forEach((opcao, i) => {
+                const b = el("button", "");
+                b.type = "button";
+                b.textContent = opcao.texto;
+                b.addEventListener("click", () => {
+                    caminho = opcao.caminho;
+                    sessionStorage.setItem("caminho", caminho);
+                    marcarEscolha(c, f, i);
+                    resolve(i);
+                });
+                c.esc.appendChild(b);
+            });
+            c.esc.classList.add("visivel");
+            seguir();
+        });
+    }
+
+    // ==============================
+    // REPRODUÇÃO NORMAL (automática)
+    // ==============================
+    async function tocar(tok) {
+        for (let i = 0; i < falas.length; i++) {
+            const f = falas[i];
+            const c = criarCena(f, i);
+            seguir();
+
+            await wait(600);               if (tok !== run) return;
+            c.emoji.classList.add("visivel");
+            await wait(900);               if (tok !== run) return;
+            c.palco.classList.add("visivel");
+            if (f.efeito) c.palco.classList.add(f.efeito);
+            await wait(1100);              if (tok !== run) return;
+
+            c.cap.classList.add("visivel");
+            if (!await digitar(montar(c.tit, f.titulo), tok, 80)) return;
+            await wait(500);               if (tok !== run) return;
+
+            if (!await digitar(montar(c.tx, textoDe(f)), tok, 70)) return;
+
+            if (f.escolhas) {
+                await wait(700);           if (tok !== run) return;
+                const e = await esperarEscolha(c, f);
+                if (tok !== run) return;
+                await wait(600);           if (tok !== run) return;
+                if (!await digitar(montar(c.res, f.escolhas[e].resultado), tok, 70)) return;
+            }
+
+            await wait(1800);              if (tok !== run) return;
+        }
+        await wait(800);                   if (tok !== run) return;
+        mostrarFinal(true);
+    }
+
+    // ==============================
+    // PULAR: mostra tudo de uma vez
+    // ==============================
+    function mostrarTudo() {
+        historia.innerHTML = "";
+        falas.forEach((f, i) => {
+            const c = criarCena(f, i);
+            [c.emoji, c.palco, c.cap].forEach((x) => x.classList.add("visivel"));
+            c.tit.textContent = f.titulo;
+            montar(c.tx, textoDe(f)).forEach((l) => l.classList.add("on"));
+            if (f.escolhas) {
+                const e = Math.max(0, f.escolhas.findIndex((o) => o.caminho === caminho));
+                f.escolhas.forEach((opcao) => {
+                    const b = el("button", "");
+                    b.type = "button";
+                    b.textContent = opcao.texto;
+                    c.esc.appendChild(b);
+                });
+                c.esc.classList.add("visivel");
+                marcarEscolha(c, f, e);
+                montar(c.res, f.escolhas[e].resultado).forEach((l) => l.classList.add("on"));
+            }
+        });
+        mostrarFinal(false);
+    }
+
+    function pular() {
+        run++;                              // cancela qualquer digitação em andamento
+        clearTimeout(redirecionar);
+        mostrarTudo();
+        window.scrollTo({ top: 0, behavior: "auto" });
+    }
+
+    // ==============================
+    // FINAL
+    // ==============================
+    function mostrarFinal(auto) {
+        botaoPular.hidden = true;
+        final.hidden = false;
+        final.focus({ preventScroll: true });
+        if (auto) {
+            seguir();
+            redirecionar = setTimeout(sair, 9000);
         }
     }
 
-    function anterior() {
-        if (atual === 0) return;
-        atual--;
-        mostrarFala();
+    function sair() {
+        clearTimeout(redirecionar);
+        document.body.classList.add("saindo");
+        setTimeout(() => { window.location.href = "cadastro_usuario.php"; }, 450);
     }
 
-    // ==============================
-    // EVENTOS
-    // ==============================
-    botaoAvancar.addEventListener("click", proximo);
-    botaoVoltar.addEventListener("click", anterior);
-
-    // clicar na caixa também completa o texto
-    dialogo.addEventListener("click", (e) => {
-        if (digitando && !e.target.closest("button")) terminarDigitacao();
-    });
+    botaoPular.addEventListener("click", pular);
+    final.addEventListener("click", (e) => { e.preventDefault(); sair(); });
 
     document.addEventListener("keydown", (e) => {
-        // Enter/Espaço em cima de um botão já faz o clique sozinho;
-        // sem esta checagem o "proximo" rodava duas vezes
-        const emBotao = e.target.closest("button, a");
-
-        if ((e.key === "Enter" || e.key === " ") && !emBotao) {
+        if ((e.key === "Enter" || e.key === " ") && !final.hidden && !e.target.closest("button")) {
             e.preventDefault();
-            if (!e.repeat) proximo();
+            sair();
         }
-        if (e.key === "ArrowRight") proximo();
-        if (e.key === "ArrowLeft") anterior();
     });
 
-    mostrarFala();
+    // ==============================
+    // INÍCIO
+    // ==============================
+    if (reduzir) mostrarTudo();
+    else tocar(run);
 });

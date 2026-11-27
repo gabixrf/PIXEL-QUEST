@@ -28,17 +28,20 @@
     const indicacao = $('.indicacao');
     const botaoSom = $('#botaoSom');
 
-    /* ==================== SOM (ambiente noturno + efeitos de 8 bits, tudo sintetizado) ====================
-       Três camadas ligam no PRESS START:
-       1) MAR: ruído filtrado que sobe e desce devagar (as ondas)
-       2) DRONE: três notas graves e contínuas em Lá menor (a noite)
-       3) ESTRELAS: notas soltas, em intervalos aleatórios, com eco (o cintilar)
-       Os efeitos de interface (digitar, START) usam onda quadrada, o som clássico de 8 bits. */
+    /* ==================== SOM (noite à beira-mar: mar + batida chill, tudo sintetizado) ====================
+       Cinco camadas ligam no PRESS START:
+       1) MAR: ruído filtrado que sobe e desce devagar (as ondas), sempre ao fundo
+       2) PIANO: acordes macios de piano elétrico em Lá menor (a noite), um por compasso
+       3) CINTILAR: notinhas "de 8 bits" suaves, arpejando o acorde, e estrelas soltas com eco
+       4) BATIDA: bumbo suave, caixa e chimbal bem baixinhos, com swing
+       5) BAIXO: nota grave e redonda no tempo forte
+       Para mudar o ritmo, altere o BPM abaixo (mais alto = mais rápido). */
 
     const Som = (() => {
         const AC = window.AudioContext || window.webkitAudioContext;
-        let ctx = null, master = null, eco = null;
-        let ligado = true, vivo = false, vez = false;
+        let ctx = null, master = null, eco = null, ruido = null, timer = null;
+        let ligado = true, vivo = false;
+        let passo = 0, proximo = 0;
 
         try { ligado = localStorage.getItem('pq-som') !== 'off'; } catch (e) { /* sem storage */ }
 
@@ -47,31 +50,29 @@
         // converte "semitons acima do Lá (220 Hz)" em frequência (Hz)
         const hz = (n) => 220 * Math.pow(2, n / 12);
 
-        // toca uma nota que some aos poucos: frequência, duração, volume, onda, atraso e saída (opcionais)
-        function nota(freq, dur, vol, tipo, atraso = 0, destino = null) {
-            const t = ctx.currentTime + atraso;
-            const o = ctx.createOscillator();
-            const g = ctx.createGain();
-            o.type = tipo;
-            o.frequency.value = freq;
-            g.gain.setValueAtTime(vol, t);
-            g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
-            o.connect(g);
-            g.connect(destino || master);
-            o.start(t);
-            o.stop(t + dur + 0.02);
-        }
+        const BPM = 76;
+        const OITAVO = 60 / BPM / 2;     // duração de meio tempo
+        const SWING = 0.045;             // atraso dos tempos "fracos": dá o balanço
 
-        // 1) MAR: ruído branco passado por um filtro que corta os agudos; um oscilador lento (LFO)
-        //    faz o volume subir e descer, como a onda chegando e voltando
+        // um acorde por compasso: Am9 -> Fmaj7 -> Cmaj7 -> Em7 (notas em semitons acima do Lá 220 Hz)
+        const ACORDES = [
+            { raiz: -12, notas: [0, 3, 7, 10, 14] },
+            { raiz: -16, notas: [-4, 0, 3, 7] },
+            { raiz: -9,  notas: [3, 7, 10, 14] },
+            { raiz: -17, notas: [7, 10, 14, 17] }
+        ];
+        const ESCALA = [0, 3, 5, 7, 10];  // pentatônica menor de Lá, para as estrelas soltas
+
+        // 1) MAR (mantido do original): ruído branco passado por um filtro que corta os agudos;
+        //    um oscilador lento (LFO) faz o volume subir e descer, como a onda chegando e voltando
         function mar() {
             const buf = ctx.createBuffer(1, ctx.sampleRate * 2, ctx.sampleRate);
             const dados = buf.getChannelData(0);
             for (let i = 0; i < dados.length; i++) dados[i] = Math.random() * 2 - 1;
 
-            const ruido = ctx.createBufferSource();
-            ruido.buffer = buf;
-            ruido.loop = true;
+            const fonte = ctx.createBufferSource();
+            fonte.buffer = buf;
+            fonte.loop = true;
 
             const filtro = ctx.createBiquadFilter();
             filtro.type = 'lowpass';
@@ -87,43 +88,160 @@
             lfo.connect(lfoForca);
             lfoForca.connect(onda.gain);
 
-            ruido.connect(filtro);
+            fonte.connect(filtro);
             filtro.connect(onda);
             onda.connect(master);
-            ruido.start();
+            fonte.start();
             lfo.start();
         }
 
-        // 2) DRONE: Lá, Mi e Lá (acorde de Lá menor sem a terça, soa vazio e misterioso)
-        function drone() {
-            const filtro = ctx.createBiquadFilter();
-            filtro.type = 'lowpass';
-            filtro.frequency.value = 500;
-            filtro.connect(master);
-
-            [-12, -5, 0].forEach((n, i) => {
-                const o = ctx.createOscillator();
-                const g = ctx.createGain();
-                o.type = 'triangle';
-                o.frequency.value = hz(n);
-                o.detune.value = i * 6;             // desafina um pouquinho para soar "vivo"
-                g.gain.value = 0.05;
-                o.connect(g);
-                g.connect(filtro);
-                o.start();
-            });
+        // rajada curta de ruído filtrado (base de caixa, chimbal e do "tec" da digitação)
+        function rajada(t, tipo, freq, q, pico, subida, queda, taxa, destino) {
+            const src = ctx.createBufferSource();
+            src.buffer = ruido;
+            src.playbackRate.value = taxa;
+            const f = ctx.createBiquadFilter();
+            f.type = tipo;
+            f.frequency.value = freq;
+            f.Q.value = q;
+            const g = ctx.createGain();
+            g.gain.setValueAtTime(0.0001, t);
+            g.gain.linearRampToValueAtTime(pico, t + subida);
+            g.gain.exponentialRampToValueAtTime(0.0001, t + subida + queda);
+            src.connect(f);
+            f.connect(g);
+            g.connect(destino || master);
+            src.start(t);
+            src.stop(t + subida + queda + 0.02);
         }
 
-        // 3) ESTRELAS: a cada 1 a 3,5 segundos, uma nota da escala pentatônica menor de Lá
-        const ESCALA = [0, 3, 5, 7, 10];
-        function estrelas() {
-            setTimeout(() => {
-                if (ligado && ctx.state === 'running') {
-                    const n = ESCALA[Math.floor(Math.random() * ESCALA.length)] + (Math.random() < 0.5 ? 12 : 24);
-                    nota(hz(n), 2.5, 0.09, 'triangle', 0, eco);
-                }
-                estrelas();
-            }, 1200 + Math.random() * 2400);
+        // piano elétrico: duas ondas levemente desafinadas + um "brilho" agudo que some rápido
+        function tecla(freq, t, dur, vol, destino) {
+            const filtro = ctx.createBiquadFilter();
+            filtro.type = 'lowpass';
+            filtro.frequency.value = 1600;
+            const g = ctx.createGain();
+            g.gain.setValueAtTime(0.0001, t);
+            g.gain.linearRampToValueAtTime(vol, t + 0.012);
+            g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+            filtro.connect(g);
+            g.connect(destino || master);
+
+            [['sine', 1, -5, 1, dur], ['triangle', 1, 5, 0.5, dur], ['sine', 2, 0, 0.35, 0.35]]
+                .forEach(([tipo, mult, det, ganho, vida]) => {
+                    const o = ctx.createOscillator();
+                    const og = ctx.createGain();
+                    o.type = tipo;
+                    o.frequency.value = freq * mult;
+                    o.detune.value = det;
+                    og.gain.setValueAtTime(ganho, t);
+                    og.gain.exponentialRampToValueAtTime(0.0001, t + vida);
+                    o.connect(og);
+                    og.connect(filtro);
+                    o.start(t);
+                    o.stop(t + dur + 0.05);
+                });
+        }
+
+        // "pluck" de 8 bits suavizado: onda quadrada passada por um filtro que fecha rápido
+        // (lembra os jogos clássicos, mas sem aspereza)
+        function pluck(freq, t, vol, destino) {
+            const o = ctx.createOscillator();
+            const f = ctx.createBiquadFilter();
+            const g = ctx.createGain();
+            o.type = 'square';
+            o.frequency.value = freq;
+            f.type = 'lowpass';
+            f.frequency.setValueAtTime(2200, t);
+            f.frequency.exponentialRampToValueAtTime(500, t + 0.3);
+            g.gain.setValueAtTime(0.0001, t);
+            g.gain.linearRampToValueAtTime(vol, t + 0.006);
+            g.gain.exponentialRampToValueAtTime(0.0001, t + 0.45);
+            o.connect(f);
+            f.connect(g);
+            g.connect(destino || master);
+            o.start(t);
+            o.stop(t + 0.5);
+        }
+
+        function baixo(t, freq, dur, vol) {
+            const o = ctx.createOscillator();
+            const f = ctx.createBiquadFilter();
+            const g = ctx.createGain();
+            o.type = 'triangle';
+            o.frequency.value = freq;
+            f.type = 'lowpass';
+            f.frequency.value = 420;
+            g.gain.setValueAtTime(0.0001, t);
+            g.gain.linearRampToValueAtTime(vol, t + 0.02);
+            g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+            o.connect(f);
+            f.connect(g);
+            g.connect(master);
+            o.start(t);
+            o.stop(t + dur + 0.05);
+        }
+
+        function bumbo(t, vol) {
+            const o = ctx.createOscillator();
+            const g = ctx.createGain();
+            o.type = 'sine';
+            o.frequency.setValueAtTime(120, t);
+            o.frequency.exponentialRampToValueAtTime(42, t + 0.12);
+            g.gain.setValueAtTime(0.0001, t);
+            g.gain.linearRampToValueAtTime(vol, t + 0.004);
+            g.gain.exponentialRampToValueAtTime(0.0001, t + 0.28);
+            o.connect(g);
+            g.connect(master);
+            o.start(t);
+            o.stop(t + 0.3);
+        }
+
+        const caixa = (t, vol) => rajada(t, 'bandpass', 1500, 0.7, vol, 0.003, 0.14, 0.9);
+        const chimbal = (t, vol) => rajada(t, 'bandpass', 6500, 0.6, vol, 0.001, 0.04, 1.2);
+
+        // toca um "meio tempo" da música (p = número do passo, t0 = instante em que acontece)
+        function tocarPasso(p, t0) {
+            const i = p % 8;
+            const a = ACORDES[Math.floor(p / 8) % ACORDES.length];
+            const t = t0 + (i % 2 ? SWING : 0) + Math.random() * 0.008;   // levemente "humano"
+            const v = 0.85 + Math.random() * 0.3;
+
+            if (i === 0) {
+                a.notas.forEach((n, k) => tecla(hz(n), t + k * 0.028, 2.8, 0.016 * v, eco));
+                baixo(t, hz(a.raiz), 1.5, 0.12 * v);
+                bumbo(t, 0.16 * v);
+            }
+            if (i === 3) bumbo(t, 0.1 * v);
+            if (i === 5) {
+                bumbo(t, 0.12 * v);
+                baixo(t, hz(a.raiz + 12), 0.5, 0.05 * v);
+                a.notas.slice(-2).forEach((n, k) => tecla(hz(n), t + k * 0.02, 1.1, 0.011 * v, eco));
+            }
+            if (i === 2 || i === 6) caixa(t, 0.035 * v);
+            chimbal(t, (i % 2 ? 0.008 : 0.014) * v);
+
+            // cintilar: arpejo suave do acorde nos tempos fracos, de vez em quando
+            if (i % 2 === 1 && Math.random() < 0.45) {
+                const n = a.notas[Math.floor(p / 2) % a.notas.length] + (Math.random() < 0.7 ? 12 : 24);
+                pluck(hz(n), t, 0.012 * v, eco);
+            }
+
+            // de vez em quando, uma estrela cai: nota solta da pentatônica
+            if (i % 2 === 0 && Math.random() < 0.12) {
+                const n = ESCALA[Math.floor(Math.random() * ESCALA.length)] + (Math.random() < 0.5 ? 12 : 24);
+                tecla(hz(n), t + 0.02, 2.2, 0.02, eco);
+            }
+        }
+
+        // agenda a música um pouquinho à frente do relógio de áudio (ritmo sempre firme)
+        function agendar() {
+            if (proximo < ctx.currentTime) proximo = ctx.currentTime + 0.05;
+            while (proximo < ctx.currentTime + 0.5) {
+                tocarPasso(passo, proximo);
+                passo++;
+                proximo += OITAVO;
+            }
         }
 
         function iniciar() {
@@ -133,23 +251,40 @@
             ctx = new AC();
             master = ctx.createGain();
             master.gain.value = 0;
-            master.connect(ctx.destination);
+            const comp = ctx.createDynamicsCompressor();   // segura os picos e "cola" a mistura
+            comp.threshold.value = -20;
+            comp.ratio.value = 3;
+            master.connect(comp);
+            comp.connect(ctx.destination);
 
-            // eco: o som vai direto para a saída e também para um atraso que se repete mais fraco
+            // eco: o som vai direto para a saída e também para um atraso abafado que se repete mais fraco
             eco = ctx.createGain();
-            const atraso = ctx.createDelay();
+            const atraso = ctx.createDelay(2);
+            const filtroEco = ctx.createBiquadFilter();
             const retorno = ctx.createGain();
-            atraso.delayTime.value = 0.45;
-            retorno.gain.value = 0.4;
+            const molhado = ctx.createGain();
+            atraso.delayTime.value = OITAVO * 1.5;
+            filtroEco.type = 'lowpass';
+            filtroEco.frequency.value = 1800;
+            retorno.gain.value = 0.35;
+            molhado.gain.value = 0.5;
             eco.connect(master);
             eco.connect(atraso);
-            atraso.connect(retorno);
+            atraso.connect(filtroEco);
+            filtroEco.connect(retorno);
             retorno.connect(atraso);
-            atraso.connect(master);
+            filtroEco.connect(molhado);
+            molhado.connect(master);
+
+            // ruído branco curto, usado por caixa, chimbal e digitação
+            ruido = ctx.createBuffer(1, ctx.sampleRate, ctx.sampleRate);
+            const dados = ruido.getChannelData(0);
+            for (let i = 0; i < dados.length; i++) dados[i] = Math.random() * 2 - 1;
 
             mar();
-            drone();
-            estrelas();
+            proximo = ctx.currentTime + 0.15;
+            agendar();
+            timer = setInterval(agendar, 100);
 
             master.gain.setTargetAtTime(volume(), ctx.currentTime, 1.2);   // entra devagar
 
@@ -170,35 +305,27 @@
                 return ligado;
             },
 
-            // "tec" da digitação (8 bits): chiado curto que sobe e desce
+            // "tec" suave da digitação: toque abafado, sem agudos
             blip() {
-                if (!ctx || !ligado) return;
-                vez = !vez;
+                if (!ctx || !ligado || !ruido) return;
                 const t = ctx.currentTime;
-                const o = ctx.createOscillator();
-                const g = ctx.createGain();
-                o.type = 'square';
-                o.frequency.setValueAtTime(vez ? 180 : 330, t);
-                o.frequency.linearRampToValueAtTime(vez ? 330 : 180, t + 0.07);
-                g.gain.setValueAtTime(0.03, t);
-                g.gain.exponentialRampToValueAtTime(0.0001, t + 0.09);
-                o.connect(g);
-                g.connect(master);
-                o.start(t);
-                o.stop(t + 0.1);
+                const r = 0.9 + Math.random() * 0.2;
+                rajada(t, 'lowpass', 2000 * r, 0.5, 0.03, 0.003, 0.025, 0.8);
+                rajada(t + 0.002, 'bandpass', 480 * r, 0.8, 0.06, 0.004, 0.05, 0.6);
             },
 
-            // ao apertar PRESS START: arpejo lento de Lá menor, como um portal abrindo
+            // ao apertar PRESS START: arpejo suave de Lá menor no piano elétrico
             plink() {
                 if (!ctx || !ligado) return;
-                [0, 3, 7, 12].forEach((n, i) => nota(hz(n + 12), 0.5, 0.05, 'square', i * 0.12, eco));
+                [0, 3, 7, 14].forEach((n, i) => tecla(hz(n + 12), ctx.currentTime + i * 0.11, 1.8, 0.03, eco));
             },
 
-            // ao clicar em START: duas notas graves descendo (Mi -> Lá), como uma porta fechando
+            // ao clicar em START: duas notas descendo (Mi -> Lá), fechando a porta devagar
             confirmar() {
                 if (!ctx || !ligado) return;
-                nota(hz(-5), 0.15, 0.06, 'square');
-                nota(hz(-12), 0.7, 0.07, 'triangle', 0.15);
+                const t = ctx.currentTime;
+                tecla(hz(7), t, 1.2, 0.04, eco);
+                tecla(hz(0), t + 0.15, 1.8, 0.04, eco);
             },
 
             sair()      { if (ctx) master.gain.setTargetAtTime(0, ctx.currentTime + 0.3, 0.1); },
