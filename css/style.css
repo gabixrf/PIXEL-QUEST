@@ -741,6 +741,13 @@ body.pagina-intro.saindo-pagina::after { animation: escurecer .45s steps(6) forw
 
 [hidden] { display: none !important; }
 
+/* enquadramento da imagem: em telas largas mostra a parte de baixo (colina, mar e ilha)
+   em vez do centro, que cortava a ilha e a ponte. --fy (0 a 1) vem do intro.js */
+.quadro {
+    transform-origin: 50% calc(var(--fy, .5) * 100%);
+    transform: translate(calc(-50% + var(--px, 0px)), calc(var(--fy, .5) * -100% + var(--py, 0px))) scale(var(--z, 1.05));
+}
+
 /* camada da travessia (canvas pequeno ampliado em pixel, no mesmo quadro da imagem) */
 #ponte {
     left: 0;

@@ -28,41 +28,102 @@
     const indicacao = $('.indicacao');
     const botaoSom = $('#botaoSom');
 
-    /* ==================== SOM (tudo sintetizado, sem arquivos) ==================== */
+    /* ==================== SOM (ambiente noturno + efeitos de 8 bits, tudo sintetizado) ====================
+       Três camadas ligam no PRESS START:
+       1) MAR: ruído filtrado que sobe e desce devagar (as ondas)
+       2) DRONE: três notas graves e contínuas em Lá menor (a noite)
+       3) ESTRELAS: notas soltas, em intervalos aleatórios, com eco (o cintilar)
+       Os efeitos de interface (digitar, START) usam onda quadrada, o som clássico de 8 bits. */
 
     const Som = (() => {
         const AC = window.AudioContext || window.webkitAudioContext;
-        const escala = [220, 261.63, 293.66, 329.63, 392, 440, 523.25, 587.33];
-        let ctx = null, master = null, bus = null;
-        let ligado = true, vivo = false;
+        let ctx = null, master = null, eco = null;
+        let ligado = true, vivo = false, vez = false;
 
         try { ligado = localStorage.getItem('pq-som') !== 'off'; } catch (e) { /* sem storage */ }
 
-        const volume = () => (ligado ? 0.7 : 0);
+        const volume = () => (ligado ? 0.8 : 0);
 
-        function nota(freq, dur, vol, tipo, destino) {
-            const t = ctx.currentTime;
+        // converte "semitons acima do Lá (220 Hz)" em frequência (Hz)
+        const hz = (n) => 220 * Math.pow(2, n / 12);
+
+        // toca uma nota que some aos poucos: frequência, duração, volume, onda, atraso e saída (opcionais)
+        function nota(freq, dur, vol, tipo, atraso = 0, destino = null) {
+            const t = ctx.currentTime + atraso;
             const o = ctx.createOscillator();
             const g = ctx.createGain();
             o.type = tipo;
             o.frequency.value = freq;
-            g.gain.setValueAtTime(0.0001, t);
-            g.gain.exponentialRampToValueAtTime(vol, t + 0.02);
+            g.gain.setValueAtTime(vol, t);
             g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
             o.connect(g);
-            g.connect(destino);
+            g.connect(destino || master);
             o.start(t);
-            o.stop(t + dur + 0.05);
+            o.stop(t + dur + 0.02);
         }
 
-        function arpejo() {
+        // 1) MAR: ruído branco passado por um filtro que corta os agudos; um oscilador lento (LFO)
+        //    faz o volume subir e descer, como a onda chegando e voltando
+        function mar() {
+            const buf = ctx.createBuffer(1, ctx.sampleRate * 2, ctx.sampleRate);
+            const dados = buf.getChannelData(0);
+            for (let i = 0; i < dados.length; i++) dados[i] = Math.random() * 2 - 1;
+
+            const ruido = ctx.createBufferSource();
+            ruido.buffer = buf;
+            ruido.loop = true;
+
+            const filtro = ctx.createBiquadFilter();
+            filtro.type = 'lowpass';
+            filtro.frequency.value = 500;
+
+            const onda = ctx.createGain();
+            onda.gain.value = 0.07;                 // volume médio do mar
+
+            const lfo = ctx.createOscillator();     // 1 ciclo a cada ~8 segundos
+            const lfoForca = ctx.createGain();
+            lfo.frequency.value = 0.12;
+            lfoForca.gain.value = 0.05;             // quanto o volume varia
+            lfo.connect(lfoForca);
+            lfoForca.connect(onda.gain);
+
+            ruido.connect(filtro);
+            filtro.connect(onda);
+            onda.connect(master);
+            ruido.start();
+            lfo.start();
+        }
+
+        // 2) DRONE: Lá, Mi e Lá (acorde de Lá menor sem a terça, soa vazio e misterioso)
+        function drone() {
+            const filtro = ctx.createBiquadFilter();
+            filtro.type = 'lowpass';
+            filtro.frequency.value = 500;
+            filtro.connect(master);
+
+            [-12, -5, 0].forEach((n, i) => {
+                const o = ctx.createOscillator();
+                const g = ctx.createGain();
+                o.type = 'triangle';
+                o.frequency.value = hz(n);
+                o.detune.value = i * 6;             // desafina um pouquinho para soar "vivo"
+                g.gain.value = 0.05;
+                o.connect(g);
+                g.connect(filtro);
+                o.start();
+            });
+        }
+
+        // 3) ESTRELAS: a cada 1 a 3,5 segundos, uma nota da escala pentatônica menor de Lá
+        const ESCALA = [0, 3, 5, 7, 10];
+        function estrelas() {
             setTimeout(() => {
                 if (ligado && ctx.state === 'running') {
-                    const f = escala[Math.floor(Math.random() * escala.length)] * (Math.random() < 0.3 ? 2 : 1);
-                    nota(f, 1.6, 0.045, 'triangle', bus);
+                    const n = ESCALA[Math.floor(Math.random() * ESCALA.length)] + (Math.random() < 0.5 ? 12 : 24);
+                    nota(hz(n), 2.5, 0.09, 'triangle', 0, eco);
                 }
-                arpejo();
-            }, rand(600, 1400));
+                estrelas();
+            }, 1200 + Math.random() * 2400);
         }
 
         function iniciar() {
@@ -74,50 +135,23 @@
             master.gain.value = 0;
             master.connect(ctx.destination);
 
-            // eco suave para as notas
-            bus = ctx.createGain();
-            const eco = ctx.createDelay();
-            const fb = ctx.createGain();
-            const lp = ctx.createBiquadFilter();
-            eco.delayTime.value = 0.42;
-            fb.gain.value = 0.38;
-            lp.type = 'lowpass';
-            lp.frequency.value = 1800;
-            bus.connect(master);
-            bus.connect(eco);
-            eco.connect(lp);
-            lp.connect(fb);
-            fb.connect(eco);
-            lp.connect(master);
+            // eco: o som vai direto para a saída e também para um atraso que se repete mais fraco
+            eco = ctx.createGain();
+            const atraso = ctx.createDelay();
+            const retorno = ctx.createGain();
+            atraso.delayTime.value = 0.45;
+            retorno.gain.value = 0.4;
+            eco.connect(master);
+            eco.connect(atraso);
+            atraso.connect(retorno);
+            retorno.connect(atraso);
+            atraso.connect(master);
 
-            // pad grave (acorde de Lá menor) com filtro respirando
-            const filtro = ctx.createBiquadFilter();
-            filtro.type = 'lowpass';
-            filtro.frequency.value = 600;
-            filtro.connect(master);
+            mar();
+            drone();
+            estrelas();
 
-            [110, 164.81, 220, 261.63].forEach((f, i) => {
-                const o = ctx.createOscillator();
-                const g = ctx.createGain();
-                o.type = i % 2 ? 'sine' : 'triangle';
-                o.frequency.value = f;
-                o.detune.value = (i - 1.5) * 4;
-                g.gain.value = 0.035;
-                o.connect(g);
-                g.connect(filtro);
-                o.start();
-            });
-
-            const lfo = ctx.createOscillator();
-            const lg = ctx.createGain();
-            lfo.frequency.value = 0.12;
-            lg.gain.value = 200;
-            lfo.connect(lg);
-            lg.connect(filtro.frequency);
-            lfo.start();
-
-            master.gain.setTargetAtTime(volume(), ctx.currentTime, 1.2);
-            arpejo();
+            master.gain.setTargetAtTime(volume(), ctx.currentTime, 1.2);   // entra devagar
 
             document.addEventListener('visibilitychange', () => {
                 if (document.hidden) ctx.suspend(); else ctx.resume();
@@ -136,19 +170,38 @@
                 return ligado;
             },
 
-            // "tec" da digitação
+            // "tec" da digitação (8 bits): chiado curto que sobe e desce
             blip() {
-                if (ctx && ligado) nota(520 + Math.random() * 120, 0.05, 0.018, 'square', master);
+                if (!ctx || !ligado) return;
+                vez = !vez;
+                const t = ctx.currentTime;
+                const o = ctx.createOscillator();
+                const g = ctx.createGain();
+                o.type = 'square';
+                o.frequency.setValueAtTime(vez ? 180 : 330, t);
+                o.frequency.linearRampToValueAtTime(vez ? 330 : 180, t + 0.07);
+                g.gain.setValueAtTime(0.03, t);
+                g.gain.exponentialRampToValueAtTime(0.0001, t + 0.09);
+                o.connect(g);
+                g.connect(master);
+                o.start(t);
+                o.stop(t + 0.1);
             },
 
-            // acorde curto ao apertar PRESS START
+            // ao apertar PRESS START: arpejo lento de Lá menor, como um portal abrindo
             plink() {
                 if (!ctx || !ligado) return;
-                [523.25, 783.99, 1046.5].forEach((f, i) =>
-                    setTimeout(() => nota(f, 0.5, 0.05, 'square', bus), i * 90));
+                [0, 3, 7, 12].forEach((n, i) => nota(hz(n + 12), 0.5, 0.05, 'square', i * 0.12, eco));
             },
 
-            sair()      { if (ctx) master.gain.setTargetAtTime(0, ctx.currentTime, 0.12); },
+            // ao clicar em START: duas notas graves descendo (Mi -> Lá), como uma porta fechando
+            confirmar() {
+                if (!ctx || !ligado) return;
+                nota(hz(-5), 0.15, 0.06, 'square');
+                nota(hz(-12), 0.7, 0.07, 'triangle', 0.15);
+            },
+
+            sair()      { if (ctx) master.gain.setTargetAtTime(0, ctx.currentTime + 0.3, 0.1); },
             restaurar() { if (ctx) master.gain.setTargetAtTime(volume(), ctx.currentTime, 0.3); }
         };
     })();
@@ -167,6 +220,22 @@
     });
 
     /* ==================== CENA ==================== */
+
+    // enquadramento: em telas largas a imagem quadrada é cortada em cima e embaixo.
+    // Em vez de mostrar o centro (onde some a ilha e a ponte), mostramos a parte de baixo
+    // (colina, mar e ilha). O valor --fy (0 a 1) é lido pelo CSS do .quadro.
+    let topoVisivel = 0;   // % da imagem onde começa a área visível
+
+    function enquadrar() {
+        const V = innerHeight, Q = Math.max(innerWidth, innerHeight);
+        const meio = V / (2 * Q);
+        const fy = Math.min(Math.max(0.66, meio), 1 - meio);
+        topoVisivel = (fy - meio) * 100;
+        quadro.style.setProperty('--fy', fy.toFixed(4));
+    }
+
+    enquadrar();
+    addEventListener('resize', enquadrar);
 
     // luzes da vila (x, y em % da imagem quadrada)
     const luzes = [
@@ -231,7 +300,7 @@
                     const m = document.createElement('div');
                     m.className = 'meteoro';
                     m.style.left = rand(25, 80).toFixed(1) + '%';
-                    m.style.top = rand(3, 30).toFixed(1) + '%';
+                    m.style.top = (topoVisivel + rand(2, 22)).toFixed(1) + '%';
                     m.addEventListener('animationend', () => m.remove());
                     quadro.append(m);
                 }
@@ -582,6 +651,7 @@
 
         const destino = botaoStart.href;
         body.classList.add('saindo-pagina');
+        Som.confirmar();
         Som.sair();
         setTimeout(() => { location.href = destino; }, reduz ? 0 : 480);
     });
